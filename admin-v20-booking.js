@@ -1,12 +1,12 @@
 // PICKYLA v20 Batch 2 - Admin booking court + confirmation workflow
 (function(){
   const byId=id=>document.getElementById(id);
-  const COURTS=['NANOMOLY','DINK VALLEY','HOMECOURT','CASA PLAY','OTHERS'];
+  const COURTS=['NANOMOLY','DINK VALLEY','HC SANTIAGO','CASA PLAY','COURTYARD','OTHERS'];
 
   function clean(v){return String(v||'').trim().replace(/\s+/g,' ');}
   function courtFromText(text){
     const m=String(text||'').match(/^Court:\s*(.+)$/mi);
-    return clean(m?.[1]||'');
+    const value=clean(m?.[1]||'');return /^(not decided yet|to be decided|tbd|none)$/i.test(value)?'':value;
   }
   function courtFromBooking(b){return clean(b?.court_name)||courtFromText(b?.notes)||'Not specified';}
   function stripCourtLine(text){return String(text||'').replace(/^Court:\s*.+(?:\r?\n)?/mi,'').trim();}
@@ -41,7 +41,7 @@
     const wrap=document.createElement('div');
     wrap.id='v20AdminCourtWrap';
     wrap.className='full v20-admin-court-wrap';
-    wrap.innerHTML='<div class="v20-admin-court-grid"><label>Court<select id="v20AdminCourt" required><option value="">Select court</option>'+
+    wrap.innerHTML='<div class="v20-admin-court-grid"><label>Court <small>(optional — can be added later)</small><select id="v20AdminCourt"><option value="">Court not decided yet</option>'+
       COURTS.map(c=>'<option value="'+c+'">'+c+'</option>').join('')+
       '</select></label><label id="v20AdminCourtOtherWrap" class="hidden">Other court<input id="v20AdminCourtOther" maxlength="120" placeholder="Enter court name"></label></div>'+
       '<small>Court fee remains separate from Pickyla coaching income.</small>';
@@ -56,21 +56,15 @@
     const prior=form.onsubmit;
     form.onsubmit=async function(e){
       const court=getCourt();
-      if(!court){
-        e.preventDefault();
-        alert('Select the court. If you choose Others, enter the court name.');
-        (byId('v20AdminCourt').value==='OTHERS'?byId('v20AdminCourtOther'):byId('v20AdminCourt'))?.focus();
-        return;
-      }
       const original=stripCourtLine(notes.value);
-      const injected='Court: '+court+(original?'\n'+original:'');
+      const injected=court?('Court: '+court+(original?'\n'+original:'')):original;
       notes.value=injected;
       try{
         await prior.call(this,e);
         if(notes.value===''){
           setCourt('');
           setTimeout(()=>window.pickylaV20Ops?.refresh?.(),250);
-        }else if(notes.value.startsWith('Court: '+court)){
+        }else if(court&&notes.value.startsWith('Court: '+court)){
           notes.value=original;
         }
       }catch(err){
@@ -158,7 +152,7 @@
     wirePasteParser();
     wireManualShortcut();
     replaceConfirmationGenerator();
-    window.pickylaV20Court={get:getCourt,set:setCourt,fromText:courtFromText,fromBooking:courtFromBooking};
+    window.pickylaV20Court={get:getCourt,set:setCourt,fromText:courtFromText,fromBooking:courtFromBooking,options:[...COURTS],stripCourtLine};
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(install,0),{once:true});else setTimeout(install,0);
 })();
