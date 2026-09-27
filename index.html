@@ -130,6 +130,15 @@
           <div><strong>Multiple Bookings</strong><small>Select 2 or more dates from the calendar. Each date becomes its own session.</small></div>
           <label><input id="v20SameHoursAll" type="checkbox" checked> Use same hours for all selected dates</label>
         </div>
+        <div class="v20-multi-court-mode">
+          <span>Court setup</span>
+          <div>
+            <button type="button" data-court-mode="same" class="active">Same court for all dates</button>
+            <button type="button" data-court-mode="different">Different court each day</button>
+            <button type="button" data-court-mode="later">Court not decided yet</button>
+          </div>
+          <small id="v20MultiCourtHelp">The selected court below will apply to every selected date.</small>
+        </div>
         <div id="v20MultiSessionList" class="v20-multi-session-list"><div class="v20-multi-empty">No dates selected yet.</div></div>
       </div>
 
@@ -191,7 +200,7 @@
 
   <section class="contact section" id="contact"><span class="eyebrow">CONNECT</span><h2>Ready to play?</h2><p>Questions about your session? Message Kyla on Facebook or install Pickyla on your phone for quick access.</p><div class="contact-actions"><a class="btn primary" href="https://www.facebook.com/share/19JD1ACiCu/" target="_blank" rel="noopener">Facebook • Kyla Nicole Soriano / Pickyla</a><button id="installPickylaBtn" class="btn install-btn hidden" type="button">Install Pickyla</button></div></section>
 </main>
-<footer><img class="footer-logo" src="pickyla-logo-final.png" alt="Pickyla Pickleball Coaching"><span>Pickleball Coaching • Santiago City, Isabela</span></footer>
+<footer class="v20-public-footer"><img class="footer-logo" src="pickyla-logo-final.png" alt="Pickyla Pickleball Coaching"><span>Pickleball Coaching • Santiago City, Isabela</span><div class="v20-footer-credit"><strong>©2026 XBALANCED DIGITAL SOLUTIONS</strong><small>Developed by ELDWIN GASPAR</small></div></footer>
 
 <div id="weekPreviewModal" class="week-modal hidden" role="dialog" aria-modal="true" aria-labelledby="weekPreviewTitle">
   <div class="week-modal-card">
