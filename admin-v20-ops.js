@@ -19,7 +19,7 @@
   function courtOf(b){
     if(b?.court_name)return String(b.court_name).trim();
     const m=String(b?.notes||'').match(/^Court:\\s*(.+)$/mi);
-    return String(m?.[1]||'Not specified').trim();
+    return String(m?.[1]||'Court not decided yet').trim();
   }
   function buckets(){
     const today=todayKey();
@@ -52,6 +52,7 @@
     let actions='';
     if(b.client_id)actions+='<button type="button" data-v20-act="profile" data-id="'+esc(b.id)+'">Player Profile</button>';
     actions+='<button type="button" data-v20-act="card" data-id="'+esc(b.id)+'">Confirmation Card</button>';
+    if(kind==='upcoming')actions+='<button type="button" data-v20-act="court" data-id="'+esc(b.id)+'">'+(court==='Court not decided yet'?'Set Court':'Change Court')+'</button>';
     if(p.balance>0.001&&!b.client_program_id)actions+='<button type="button" class="primary" data-v20-act="pay" data-id="'+esc(b.id)+'">'+(kind==='payment'?'Record Remaining Payment':'Record Payment')+'</button>';
     if(kind==='upcoming'||kind==='past'){
       actions+='<button type="button" class="v20-complete" data-v20-act="status" data-status="completed" data-id="'+esc(b.id)+'">Mark Completed</button>';
@@ -83,6 +84,20 @@
         }
         if(act==='pay'){
           if(typeof updatePayment==='function')updatePayment({...b,amount_paid:paidFor(b)});
+          return;
+        }
+        if(act==='court'){
+          const options=window.pickylaV20Court?.options||['NANOMOLY','DINK VALLEY','HC SANTIAGO','CASA PLAY','COURTYARD','OTHERS'];
+          const current=courtOf(b)==='Court not decided yet'?'':courtOf(b);
+          const input=prompt('Set court for this booking.\n\nOptions: '+options.join(', ')+'\n\nEnter one of the options or type another court name. Leave blank to keep undecided.',current);
+          if(input===null)return;
+          const court=String(input||'').trim();
+          const strip=window.pickylaV20Court?.stripCourtLine||((t)=>String(t||'').replace(/^Court:\\s*.+(?:\\r?\\n)?/mi,'').trim());
+          const base=strip(b.notes||'');
+          const notes=court?('Court: '+court+(base?'\n'+base:'')):base;
+          const {error}=await db.from('bookings').update({notes}).eq('id',b.id);
+          if(error)return alert(error.message);
+          await loadOps(true);
           return;
         }
         if(act==='status'&&typeof setV17SessionStatus==='function'){
