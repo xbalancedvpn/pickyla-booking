@@ -83,8 +83,12 @@
   function updatePrice20(){
     const box=byId('v20PublicPricePreview');
     if(!box)return;
-    const n=Number(selectedPlayers||1),hrs=(selectedStart!==null&&selectedEnd!==null)?Math.max(0,selectedEnd-selectedStart):0,hourly=hourly20(n),total=hourly*hrs;
-    box.innerHTML='<span>Estimated coaching fee</span><strong>'+peso20(total)+'</strong><small>'+priceFormula20(n)+' = '+peso20(hourly)+'/hr'+(hrs?' × '+hrs+' hr'+(hrs>1?'s':''):'')+'</small>';
+    const n=Number(selectedPlayers||1),hourly=hourly20(n);
+    const multi=window.pickylaV20Multi?.isMultiple?.();
+    const hrs=multi?Number(window.pickylaV20Multi?.totalHours?.()||0):((selectedStart!==null&&selectedEnd!==null)?Math.max(0,selectedEnd-selectedStart):0);
+    const total=multi?Number(window.pickylaV20Multi?.totalFee?.()||0):hourly*hrs;
+    const suffix=multi&&hrs?' • '+window.pickylaV20Multi.sessions().length+' sessions • '+hrs+' total hr'+(hrs>1?'s':''):(hrs?' × '+hrs+' hr'+(hrs>1?'s':''):'');
+    box.innerHTML='<span>Estimated coaching fee</span><strong>'+peso20(total)+'</strong><small>'+priceFormula20(n)+' = '+peso20(hourly)+'/hr'+suffix+'</small>';
   }
   function message20(){
     const players=getPlayers20(true);
