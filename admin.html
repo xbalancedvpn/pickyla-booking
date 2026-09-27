@@ -3,6 +3,8 @@
   <link rel="stylesheet" href="admin-v17f.css?v=17f">
   <link rel="stylesheet" href="admin-v17g.css?v=17g">
   <link rel="stylesheet" href="admin-v20-ops.css?v=20ops1">
+  <link rel="stylesheet" href="admin-v20-date-picker.css?v=20date1">
+  <link rel="stylesheet" href="admin-v20-schedule.css?v=20schedule1">
   <link rel="stylesheet" href="admin-v20-booking.css?v=20book1">
   <link rel="stylesheet" href="v20-weeknav.css?v=20week1">
   <link rel="stylesheet" href="admin-v20-players.css?v=20players1">
@@ -20,26 +22,28 @@
 <div id="adminMenuBackdrop" class="admin-menu-backdrop hidden"></div>
 <aside id="adminMenuDrawer" class="admin-menu-drawer" aria-hidden="true"><div class="admin-menu-head"><div><span class="eyebrow">QUICK NAVIGATION</span><h2>Admin Menu</h2></div><button id="adminMenuClose" type="button" aria-label="Close menu">×</button></div><nav class="admin-menu-links">
       <a href="#adminDashboardTop">Dashboard</a>
-      <span class="v20-admin-nav-group">Priority Operations</span>
+      <span class="v20-admin-nav-group">Operations</span>
       <a href="#todayCommandSection">Today</a>
-      <a href="#inquirySection">Booking Inquiries</a>
       <a href="#v20UpcomingSection">Upcoming Bookings</a>
       <a href="#v20PastSection">Past Sessions</a>
       <a href="#v20PaymentSection">Payment Follow-up</a>
       <a href="#v20CompletedSection">Completed Sessions</a>
-      <a href="#calendarSection">Calendar</a>
-      <a href="#daySection">Day View</a>
-      <span class="v20-admin-nav-group">Players</span>
-      <a href="#clientHubSection">Player Management</a>
-      <a href="#programHubSection">Programs</a>
       <span class="v20-admin-nav-group">Finance</span>
       <a href="#paymentDashboardSection">Payments</a>
       <a href="#adminReportsSection">Reports</a>
-      <span class="v20-admin-nav-group">Public Content</span>
+      <span class="v20-admin-nav-group">Public Sharing</span>
       <a href="#weeklyShareSection">Weekly Schedule</a>
-      <a href="#galleryAdminSection">Pickyla Moments</a><a href="#shareToolsSection">Marketing & Testimonials</a>
-      <span class="v20-admin-nav-group">Tools</span>
-      <a href="#bookingToolsSection">Manual Booking & Paste</a>
+      <a href="#galleryAdminSection">Pickyla Moments</a>
+      <a href="#shareToolsSection">Marketing & Testimonials</a>
+      <span class="v20-admin-nav-group">Players & Programs</span>
+      <a href="#clientHubSection">Player Management</a>
+      <a href="#programHubSection">Programs</a>
+      <span class="v20-admin-nav-group">Schedule & Booking Tools</span>
+      <a href="#bookingToolsSection">Manual Booking</a>
+      <a href="#v20ScheduleBlockSection">Tournament / Unavailable</a>
+      <a href="#inquirySection">Booking Inquiries</a>
+      <a href="#calendarSection">Calendar</a>
+      <a href="#daySection">Day View</a>
     </nav><a class="admin-menu-public" href="index.html">Open Public Site ↗</a></aside><main class="admin-wrap">
 <section class="welcome" id="adminDashboardTop"><span class="eyebrow">DASHBOARD</span><h1>Coach operations, clients & progress</h1><p>Run today’s sessions, track clients and programs, monitor progress, manage collections, and keep the schedule moving.</p></section>
 <section class="report-grid"><article class="report-card"><span>Today</span><strong id="todayGross">₱0</strong><small id="todayMeta">0 sessions • ₱0 collected</small></article><article class="report-card"><span>This Week</span><strong id="weekGross">₱0</strong><small id="weekMeta">0 sessions • ₱0 collected</small></article><article class="report-card"><span>This Month</span><strong id="monthGross">₱0</strong><small id="monthMeta">0 sessions • ₱0 collected</small></article><article class="report-card"><span>All Time</span><strong id="allGross">₱0</strong><small id="allMeta">0 sessions • ₱0 collected</small></article></section>
@@ -73,7 +77,7 @@
 </section>
 
 <section class="panel v20-ops-panel" id="v20CompletedSection">
-  <div class="panel-head"><div><span class="eyebrow">COMPLETED</span><h2>Completed Sessions</h2><p class="panel-note">Fully settled completed sessions. Five are shown by default.</p></div><span id="v20CompletedCount" class="v20-ops-count">0</span></div>
+  <div class="panel-head"><div><span class="eyebrow">COMPLETED</span><h2>Completed Sessions</h2><p class="panel-note">Fully settled completed sessions. Three are shown by default.</p></div><span id="v20CompletedCount" class="v20-ops-count">0</span></div>
   <div id="v20CompletedList" class="v20-ops-list"><div class="empty">Loading completed sessions…</div></div>
   <div class="v20-ops-toggle-row"><button id="v20CompletedToggle" class="secondary" type="button">Show All</button></div>
 </section>
@@ -267,4 +271,4 @@
   <div class="editor-actions"><button id="cancelProgressCard" type="button" class="soft-danger">Close</button><button id="downloadProgressCard" type="button" class="primary">Download PNG</button></div>
 </div></dialog>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script><script src="admin.js?v=17e"></script><script src="admin-v17f.js?v=17f"></script><script src="admin-v17g.js?v=17g"></script><script src="admin-v20-ops.js?v=20ops1"></script><script src="admin-v20-booking.js?v=20book1"></script><script src="admin-v20-pricing.js?v=20price1"></script><script src="admin-v20-gallery.js?v=20gallery1"></script><script src="v20-weeknav.js?v=20week1"></script><script src="admin-v20-players.js?v=20players1"></script><script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('service-worker.js').catch(()=>{}));}</script></body></html>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script><script src="admin.js?v=17e"></script><script src="admin-v17f.js?v=17f"></script><script src="admin-v17g.js?v=17g"></script><script src="admin-v20-ops.js?v=20ops1"></script><script src="admin-v20-date-picker.js?v=20date1"></script><script src="admin-v20-schedule.js?v=20schedule1"></script><script src="admin-v20-booking.js?v=20book1"></script><script src="admin-v20-pricing.js?v=20price1"></script><script src="admin-v20-gallery.js?v=20gallery1"></script><script src="v20-weeknav.js?v=20week1"></script><script src="admin-v20-players.js?v=20players1"></script><script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('service-worker.js').catch(()=>{}));}</script></body></html>
