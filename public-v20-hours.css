@@ -8,3 +8,11 @@
 #booking .v20-hour-slot.selected span,
 #booking .v20-hour-slot.range-selected span{font-weight:900}
 #booking .duration-summary{margin-top:4px}
+
+#booking .v20-hour-slot small{display:block;margin-top:3px;font-size:8px;font-weight:800;line-height:1.2}
+#booking .v20-hour-slot.block-tournament,.pw-blocked-cell.block-tournament{background:#fff4bf!important;color:#725c00!important;border-color:#f5c400!important}
+#booking .v20-hour-slot.block-training,.pw-blocked-cell.block-training{background:#e8f3ff!important;color:#245d91!important;border-color:#9fc7ef!important}
+#booking .v20-hour-slot.block-personal,.pw-blocked-cell.block-personal{background:#fff0f6!important;color:#8e4566!important;border-color:#e7b5ca!important}
+#booking .v20-hour-slot.block-rest,.pw-blocked-cell.block-rest{background:#edf7ed!important;color:#3f7046!important;border-color:#a9cca9!important}
+#booking .v20-hour-slot.block-unavailable,.pw-blocked-cell.block-unavailable{background:#ecefed!important;color:#616b65!important;border-color:#cfd5d1!important}
+#booking .v20-hour-slot.block-other,.pw-blocked-cell.block-other{background:#f2efff!important;color:#65508e!important;border-color:#beb2ea!important}
