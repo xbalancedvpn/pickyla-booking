@@ -97,7 +97,13 @@
           b.classList.add('booked');
           b.disabled=true;
         }else if(s==='unavailable'){
+          const reason=typeof publicReasonFor==='function'?publicReasonFor(ds,h):'';
           b.classList.add('unavailable');
+          if(reason){
+            const key=String(reason).toLowerCase().includes('tournament')?'tournament':String(reason).toLowerCase().includes('training')?'training':String(reason).toLowerCase().includes('personal')?'personal':String(reason).toLowerCase().includes('rest')?'rest':String(reason).toLowerCase().includes('unavailable')?'unavailable':'other';
+            b.classList.add('block-'+key);
+            b.innerHTML='<span>'+hourLabel(h)+'</span><small>'+reason+'</small>';
+          }else b.innerHTML='<span>'+hourLabel(h)+'</span><small>Blocked</small>';
           b.disabled=true;
         }else{
           if(isSelected(h))b.classList.add('in-range','selected','range-selected');
