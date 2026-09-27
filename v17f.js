@@ -44,6 +44,7 @@
     const note=cleanSpaces(selfNote?.value||'');if(note){row.note=note;any=true;}
     return any?row:null;
   }
+  window.pickylaGetSelfAssessment=getSelfAssessment;
   const originalBookingMessage=bookingMessage;
   bookingMessage=function(){
     const base=originalBookingMessage();if(!base)return base;
