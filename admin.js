@@ -1,4 +1,4 @@
-const SUPABASE_URL="https://bnekbuwfloagqjzselxp.supabase.co",SUPABASE_PUBLISHABLE_KEY="sb_publishable_Xs8qdDm4RTa2Adjw34SLKw_rS-c-ikB";const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);const $=id=>document.getElementById(id),loginView=$("loginView"),adminView=$("adminView"),adminDate=$("adminDate"),slotList=$("slotList"),bookingGroups=$("bookingGroups"),editDialog=$("editDialog");let rowsByHour=new Map(),bookingsForDay=[],parsedInquiry=null,incomeChart=null,mixChart=null;const pad=n=>String(n).padStart(2,"0"),dateStr=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`,todayStr=()=>dateStr(new Date()),hourName=h=>h===24?"12:00 MN":`${h%12||12}:00 ${h<12?"AM":"PM"}`,hourLabel=h=>`${hourName(h)} – ${hourName(h+1)}`,peso=n=>"₱"+Number(n||0).toLocaleString("en-PH",{maximumFractionDigits:2}),standardRate=n=>{n=Math.max(1,Math.min(12,Number(n)||1));return n<=3?(400+Math.max(0,n-1)*200)/n:250;},coachingType=n=>Number(n)>=4?"Group Drills Training":"Private Coaching",dateRange=(a,b)=>{const out=[],d=new Date(a+"T00:00:00"),e=new Date(b+"T00:00:00");while(d<=e){out.push(dateStr(d));d.setDate(d.getDate()+1);}return out;};function toast(s){const e=$("toast");e.textContent=s;e.classList.add("show");setTimeout(()=>e.classList.remove("show"),2200);}function fillHours(sel,a,b){sel.innerHTML="";for(let h=a;h<=b;h++){const o=document.createElement("option");o.value=h;o.textContent=hourName(h);sel.appendChild(o);}}fillHours($("blockStart"),8,23);fillHours($("blockEnd"),9,24);$("blockEnd").value="24";
+const SUPABASE_URL="https://bnekbuwfloagqjzselxp.supabase.co",SUPABASE_PUBLISHABLE_KEY="sb_publishable_Xs8qdDm4RTa2Adjw34SLKw_rS-c-ikB";const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);const $=id=>document.getElementById(id),loginView=$("loginView"),adminView=$("adminView"),adminDate=$("adminDate"),slotList=$("slotList"),bookingGroups=$("bookingGroups"),editDialog=$("editDialog");let rowsByHour=new Map(),bookingsForDay=[],parsedInquiry=null,incomeChart=null,mixChart=null,earningsChartMode="daily",earningsChartRows=[];const pad=n=>String(n).padStart(2,"0"),dateStr=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`,todayStr=()=>dateStr(new Date()),hourName=h=>h===24?"12:00 MN":`${h%12||12}:00 ${h<12?"AM":"PM"}`,hourLabel=h=>`${hourName(h)} – ${hourName(h+1)}`,peso=n=>"₱"+Number(n||0).toLocaleString("en-PH",{maximumFractionDigits:2}),standardRate=n=>{n=Math.max(1,Math.min(12,Number(n)||1));return n<=3?(400+Math.max(0,n-1)*200)/n:250;},coachingType=n=>Number(n)>=4?"Group Drills Training":"Private Coaching",dateRange=(a,b)=>{const out=[],d=new Date(a+"T00:00:00"),e=new Date(b+"T00:00:00");while(d<=e){out.push(dateStr(d));d.setDate(d.getDate()+1);}return out;};function toast(s){const e=$("toast");e.textContent=s;e.classList.add("show");setTimeout(()=>e.classList.remove("show"),2200);}function fillHours(sel,a,b){sel.innerHTML="";for(let h=a;h<=b;h++){const o=document.createElement("option");o.value=h;o.textContent=hourName(h);sel.appendChild(o);}}fillHours($("blockStart"),8,23);fillHours($("blockEnd"),9,24);$("blockEnd").value="24";
 async function authRefresh(){const {data:{session}}=await db.auth.getSession();if(session){loginView.classList.add("hidden");adminView.classList.remove("hidden");const t=todayStr();adminDate.value||=t;$("bookingDate").value||=t;$("blockFromDate").value||=t;$("blockToDate").value||=t;adminCalendarView=new Date();adminCalendarView.setDate(1);await Promise.all([loadDay(),loadBookingAvailability(),loadReports(),loadAdminCalendar(),loadInquiries()]);}else{adminView.classList.add("hidden");loginView.classList.remove("hidden");}}
 $("loginForm").onsubmit=async e=>{e.preventDefault();$("loginError").textContent="";const {error}=await db.auth.signInWithPassword({email:$("email").value.trim(),password:$("password").value});if(error)$("loginError").textContent=error.message;else authRefresh();};$("logoutBtn").onclick=async()=>{await db.auth.signOut();authRefresh();};
 async function fetchSlots(d){const {data,error}=await db.from("schedule_slots").select("id,slot_date,start_hour,status,client_name,contact,coaching_type,rate,notes,booking_id").eq("slot_date",d).order("start_hour");if(error)throw error;return data||[];}async function fetchBookings(d){const {data,error}=await db.from("bookings").select("*").eq("session_date",d).neq("status","cancelled").order("start_hour");if(error)throw error;return data||[];}
@@ -24,7 +24,67 @@ $("inquiryFilter").onchange=loadInquiries;
  document.querySelectorAll('[data-preset]').forEach(b=>b.onclick=()=>{const m={whole:[8,24],morning:[8,12],afternoon:[12,17],evening:[17,24]}[b.dataset.preset];$("blockStart").value=m[0];$("blockEnd").value=m[1];});$("blockFromDate").onchange=()=>{if(!$("blockToDate").value||$("blockToDate").value<$("blockFromDate").value)$("blockToDate").value=$("blockFromDate").value;};$("blockForm").onsubmit=async e=>{e.preventDefault();const a=$("blockFromDate").value,b=$("blockToDate").value,s=Number($("blockStart").value),en=Number($("blockEnd").value);if(!a||!b||b<a||en<=s)return alert('Check the range.');const rows=[];for(const d of dateRange(a,b)){const slots=await fetchSlots(d),map=new Map(slots.map(x=>[Number(x.start_hour),x.status]));for(let h=s;h<en;h++)if((map.get(h)||'available')==='available')rows.push({slot_date:d,start_hour:h,status:'unavailable'});}if(!rows.length)return alert('Nothing to block.');const {error}=await db.from('schedule_slots').upsert(rows,{onConflict:'slot_date,start_hour'});if(error)return alert(error.message);toast('Unavailable schedule saved');await Promise.all([loadDay(),loadBookingAvailability(),loadAdminCalendar()]);};$("clearUnavailableBtn").onclick=async()=>{const a=$("blockFromDate").value,b=$("blockToDate").value,s=Number($("blockStart").value),en=Number($("blockEnd").value);if(!confirm('Clear unavailable slots in this range? Bookings will stay booked.'))return;const {error}=await db.from('schedule_slots').delete().eq('status','unavailable').gte('slot_date',a).lte('slot_date',b).gte('start_hour',s).lt('start_hour',en);if(error)return alert(error.message);toast('Unavailable slots cleared');await Promise.all([loadDay(),loadBookingAvailability(),loadAdminCalendar()]);};
 // Reports + charts
 async function loadReports(){const {data,error}=await db.from('bookings').select('session_date,start_hour,end_hour,total_amount,amount_paid,status,participant_count');if(error)return;const rows=data||[],active=rows.filter(x=>x.status!=='cancelled'),today=new Date(),t=todayStr(),weekStart=new Date(today);weekStart.setDate(today.getDate()-((today.getDay()+6)%7));const weekEnd=new Date(weekStart);weekEnd.setDate(weekStart.getDate()+6);const ms=new Date(today.getFullYear(),today.getMonth(),1),me=new Date(today.getFullYear(),today.getMonth()+1,0);const calc=(arr,p)=>{const gross=arr.reduce((a,x)=>a+Number(x.total_amount||0),0),paid=arr.reduce((a,x)=>a+Number(x.amount_paid||0),0);$(p+'Gross').textContent=peso(gross);$(p+'Meta').textContent=`${arr.length} session(s) • ${peso(paid)} collected`;};calc(active.filter(x=>x.session_date===t),'today');calc(active.filter(x=>x.session_date>=dateStr(weekStart)&&x.session_date<=dateStr(weekEnd)),'week');const monthRows=active.filter(x=>x.session_date>=dateStr(ms)&&x.session_date<=dateStr(me));calc(monthRows,'month');calc(active,'all');$("monthHours").textContent=monthRows.reduce((a,x)=>a+(Number(x.end_hour)-Number(x.start_hour)),0);$("cancelCount").textContent=rows.filter(x=>x.status==='cancelled').length;renderCharts(active);}
-function renderCharts(active){const labels=[],values=[],now=new Date(),y=now.getFullYear(),m=now.getMonth(),daysInMonth=new Date(y,m+1,0).getDate();for(let day=1;day<=daysInMonth;day++){const d=new Date(y,m,day),ds=dateStr(d);labels.push(d.toLocaleDateString("en-PH",{month:"short",day:"numeric"}));values.push(active.filter(x=>x.session_date===ds).reduce((a,x)=>a+Number(x.total_amount||0),0));}const groups=[1,2,3,4,5].map(n=>active.filter(x=>Number(x.participant_count)===n).length);if(incomeChart)incomeChart.destroy();if(mixChart)mixChart.destroy();incomeChart=new Chart($("incomeChart"),{type:"bar",data:{labels,datasets:[{label:"Daily booked value",data:values,backgroundColor:"#f5c400",borderColor:"#111111",borderWidth:1,borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>" "+peso(c.raw||0)}}},scales:{x:{ticks:{autoSkip:false,maxRotation:65,minRotation:45,font:{size:9}}},y:{beginAtZero:true,ticks:{callback:v=>peso(v)}}}}});mixChart=new Chart($("mixChart"),{type:"doughnut",data:{labels:["1 player","2 players","3 players","4 players","5 players"],datasets:[{data:groups,backgroundColor:["#111111","#f5c400","#d8a800","#9d9d9d","#e8dfbd"]}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom",labels:{boxWidth:10,font:{size:10}}}}}});}
+function renderCharts(active){
+  earningsChartRows=active||[];
+  const labels=[],values=[],now=new Date();
+  let datasetLabel="Daily booked value",xTicks={autoSkip:false,maxRotation:65,minRotation:45,font:{size:9}};
+
+  if(earningsChartMode==="monthly"){
+    const dated=earningsChartRows.filter(x=>x.session_date).map(x=>new Date(x.session_date+"T00:00:00")).filter(d=>!Number.isNaN(d.getTime()));
+    const currentStart=new Date(now.getFullYear(),now.getMonth(),1);
+    const capStart=new Date(now.getFullYear(),now.getMonth()-11,1);
+    let startMonth=currentStart;
+    if(dated.length){
+      const earliest=new Date(Math.min(...dated.map(d=>d.getTime())));
+      startMonth=new Date(earliest.getFullYear(),earliest.getMonth(),1);
+      if(startMonth<capStart)startMonth=capStart;
+    }
+    for(let d=new Date(startMonth);d<=currentStart;d=new Date(d.getFullYear(),d.getMonth()+1,1)){
+      const y=d.getFullYear(),m=d.getMonth();
+      labels.push(d.toLocaleDateString("en-PH",{month:"short",year:"numeric"}));
+      values.push(earningsChartRows.filter(x=>{
+        if(!x.session_date)return false;
+        const sd=new Date(x.session_date+"T00:00:00");
+        return sd.getFullYear()===y&&sd.getMonth()===m;
+      }).reduce((a,x)=>a+Number(x.total_amount||0),0));
+    }
+    datasetLabel="Monthly booked value";
+    xTicks={autoSkip:false,maxRotation:35,minRotation:0,font:{size:9}};
+  }else{
+    const y=now.getFullYear(),m=now.getMonth(),daysInMonth=new Date(y,m+1,0).getDate();
+    for(let day=1;day<=daysInMonth;day++){
+      const d=new Date(y,m,day),ds=dateStr(d);
+      labels.push(d.toLocaleDateString("en-PH",{month:"short",day:"numeric"}));
+      values.push(earningsChartRows.filter(x=>x.session_date===ds).reduce((a,x)=>a+Number(x.total_amount||0),0));
+    }
+  }
+
+  const title=$("incomeChartTitle"),dailyBtn=$("earningsDailyBtn"),monthlyBtn=$("earningsMonthlyBtn");
+  if(title)title.textContent=earningsChartMode==="monthly"?"Monthly Earnings":"This Month Earnings";
+  if(dailyBtn&&monthlyBtn){
+    dailyBtn.classList.toggle("active",earningsChartMode==="daily");
+    monthlyBtn.classList.toggle("active",earningsChartMode==="monthly");
+    if(!dailyBtn.dataset.wired){
+      dailyBtn.dataset.wired="1";monthlyBtn.dataset.wired="1";
+      dailyBtn.onclick=()=>{earningsChartMode="daily";renderCharts(earningsChartRows);};
+      monthlyBtn.onclick=()=>{earningsChartMode="monthly";renderCharts(earningsChartRows);};
+    }
+  }
+
+  const groups=[1,2,3,4,5].map(n=>earningsChartRows.filter(x=>Number(x.participant_count)===n).length);
+  if(incomeChart)incomeChart.destroy();
+  if(mixChart)mixChart.destroy();
+  incomeChart=new Chart($("incomeChart"),{
+    type:"bar",
+    data:{labels,datasets:[{label:datasetLabel,data:values,backgroundColor:"#f5c400",borderColor:"#111111",borderWidth:1,borderRadius:5}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>" "+peso(c.raw||0)}}},scales:{x:{ticks:xTicks},y:{beginAtZero:true,ticks:{callback:v=>peso(v)}}}}
+  });
+  mixChart=new Chart($("mixChart"),{
+    type:"doughnut",
+    data:{labels:["1 player","2 players","3 players","4 players","5 players"],datasets:[{data:groups,backgroundColor:["#111111","#f5c400","#d8a800","#9d9d9d","#e8dfbd"]}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom",labels:{boxWidth:10,font:{size:10}}}}}
+  });
+}
 // Admin month calendar
 const adminCalendarEl=$("adminCalendar"),adminMonthLabel=$("adminMonthLabel");let adminCalendarView=new Date();adminCalendarView.setDate(1);function adminDayState(map,date){let booked=0,unavailable=0,available=0;for(let h=8;h<24;h++){const s=map.get(`${date}|${h}`)||'available';if(s==='booked')booked++;else if(s==='unavailable')unavailable++;else available++;}if(booked===16)return{cls:'full-booked',label:'Fully booked'};if(available===0)return{cls:'full-unavailable',label:'No availability'};if(booked>0)return{cls:'partial-booked',label:`${booked} booked`};if(unavailable>0)return{cls:'partial-unavailable',label:'Limited'};return{cls:'',label:'Open'};}
 async function loadAdminCalendar(){const y=adminCalendarView.getFullYear(),m=adminCalendarView.getMonth();adminMonthLabel.textContent=adminCalendarView.toLocaleDateString('en-PH',{month:'long',year:'numeric'});const last=new Date(y,m+1,0),start=`${y}-${pad(m+1)}-01`,end=`${y}-${pad(m+1)}-${pad(last.getDate())}`;const {data,error}=await db.from('schedule_slots').select('slot_date,start_hour,status').gte('slot_date',start).lte('slot_date',end);const map=new Map();if(!error)(data||[]).forEach(r=>map.set(`${r.slot_date}|${Number(r.start_hour)}`,r.status));adminCalendarEl.innerHTML='';const first=(new Date(y,m,1).getDay()+6)%7,today=new Date();today.setHours(0,0,0,0);for(let i=0;i<first;i++){const blank=document.createElement('span');blank.className='admin-day blank';adminCalendarEl.appendChild(blank);}for(let d=1;d<=last.getDate();d++){const dt=new Date(y,m,d),ds=`${y}-${pad(m+1)}-${pad(d)}`,state=adminDayState(map,ds),btn=document.createElement('button');btn.type='button';btn.className='admin-day';if(state.cls)btn.classList.add(state.cls);if(dt.getTime()===today.getTime())btn.classList.add('today');if(adminDate.value===ds)btn.classList.add('selected');btn.innerHTML=`<span class="day-num">${d}</span><span class="day-info">${state.label}</span>`;btn.onclick=async()=>{adminDate.value=ds;await loadDay();await loadAdminCalendar();document.querySelector('.day-section').scrollIntoView({behavior:'smooth',block:'start'});};adminCalendarEl.appendChild(btn);}}$("adminPrevMonth").onclick=()=>{adminCalendarView.setMonth(adminCalendarView.getMonth()-1);loadAdminCalendar();};$("adminNextMonth").onclick=()=>{adminCalendarView.setMonth(adminCalendarView.getMonth()+1);loadAdminCalendar();};
