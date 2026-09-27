@@ -1,7 +1,7 @@
 // PICKYLA v20 Batch 2 - public booking court workflow
 (function(){
   const byId=id=>document.getElementById(id);
-  const COURTS=['NANOMOLY','DINK VALLEY','HOMECOURT','CASA PLAY','OTHERS'];
+  const COURTS=['NANOMOLY','DINK VALLEY','HC SANTIAGO','CASA PLAY','COURTYARD','OTHERS'];
 
   function clean(v){return String(v||'').trim().replace(/\s+/g,' ');}
   function courtValue(){
@@ -76,7 +76,7 @@
     }
     syncOther();
     if(typeof updateSummary==='function')updateSummary();
-    window.pickylaV20PublicCourt={value:courtValue};
+    window.pickylaV20PublicCourt={value:courtValue,options:[...COURTS],syncOther};
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
