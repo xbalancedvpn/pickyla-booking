@@ -1,0 +1,12 @@
+/* Pickyla v20 schedule blocking */
+.v20-block-panel{margin-top:0}
+.v20-block-date-label{display:grid;gap:7px;max-width:280px;font-size:11px;font-weight:800}
+.v20-block-legend{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0;font-size:9px;color:#6b675e}.v20-block-legend span{display:flex;align-items:center;gap:5px}.v20-block-legend i{width:10px;height:10px;border-radius:50%}
+.reason-unavailable{background:#aeb5b0}.reason-training{background:#7fb3e6}.reason-tournament{background:#f5c400}.reason-personal{background:#d99ab6}.reason-rest{background:#8fbc8f}.reason-other{background:#a99ad8}
+.v20-block-slots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.v20-block-slot{display:grid;gap:4px;text-align:left;border:1px solid #e3ded2;border-radius:12px;padding:11px;background:#fff;cursor:pointer}.v20-block-slot span{font-weight:900;font-size:11px}.v20-block-slot small{font-size:9px;color:#6e6a61}
+.v20-block-slot.booked{background:#fff0ee;border-color:#efc3be;cursor:not-allowed}.v20-block-slot.available:hover{border-color:#111}
+.v20-block-slot.unavailable{background:#ecefed}.v20-block-slot.block-tournament{background:#fff4bf;border-color:#f5c400}.v20-block-slot.block-training{background:#e8f3ff;border-color:#9fc7ef}.v20-block-slot.block-personal{background:#fff0f6;border-color:#e7b5ca}.v20-block-slot.block-rest{background:#edf7ed;border-color:#a9cca9}.v20-block-slot.block-other{background:#f2efff;border-color:#beb2ea}
+.v20-block-public{display:flex!important;gap:8px!important;align-items:center!important}.v20-block-public input{width:auto!important}.v20-block-privacy{color:#777;font-size:9px}
+.v20-modal-card{position:relative;padding:22px;display:grid;gap:13px}.v20-modal-card h2{margin:0;font:800 23px Manrope}.v20-modal-card label{display:grid;gap:6px;font-size:11px;font-weight:800}.v20-modal-card input,.v20-modal-card select{width:100%;border:1px solid #ddd7ca;border-radius:11px;padding:11px;background:#fff}.v20-modal-x{position:absolute;right:16px;top:16px;border:0;width:34px;height:34px;border-radius:50%;background:#efeee9;font-size:20px}.v20-modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:5px}
+@media(max-width:760px){.v20-block-slots{grid-template-columns:repeat(2,minmax(0,1fr))}}
