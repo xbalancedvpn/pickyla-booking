@@ -1,0 +1,4 @@
+/* PICKYLA v20 admin pricing */
+.v20-admin-coaching-mode{display:grid;gap:6px;font-size:11px;font-weight:800;color:#5a675f}
+.v20-admin-coaching-mode select{width:100%;border:1px solid var(--line);background:#fff;border-radius:12px;padding:13px;color:var(--ink)}
+.v20-admin-coaching-mode small{font-size:9px;font-weight:600;color:var(--muted);line-height:1.45}
