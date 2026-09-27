@@ -1,0 +1,6 @@
+/* PICKYLA v20 Batch 3 - week navigation */
+.v20-week-nav{display:flex;gap:7px;flex-wrap:wrap}
+.v20-week-nav button{border:1px solid #ded8c9;background:#fff;border-radius:10px;padding:9px 11px;font-size:10px;font-weight:800;cursor:pointer;color:#222}
+.v20-week-nav button.active{background:#111;color:#f5c400;border-color:#111}
+.v20-week-nav-public{margin:0 0 13px}
+@media(max-width:640px){.v20-week-nav{display:grid;grid-template-columns:repeat(3,1fr);width:100%}.v20-week-nav button{padding:10px 5px}}
