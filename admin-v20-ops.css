@@ -38,3 +38,6 @@
 .v20-ops-actions button.v20-cancel{background:#fff0ee;color:#8b3a33}
 .v20-admin-nav-group{display:block;margin:12px 10px 5px;padding-top:9px;border-top:1px solid #ece8de;font-size:9px;font-weight:900;letter-spacing:1.1px;text-transform:uppercase;color:#8b816c}
 .admin-menu-links .v20-admin-nav-group:first-of-type{margin-top:6px}
+
+.inquiry-status-stack{display:grid;justify-items:end;gap:5px}
+.v20-multi-tag{display:inline-flex;align-items:center;border-radius:999px;padding:5px 8px;background:#111;color:#f5c400;font-size:8px;font-weight:900;letter-spacing:.6px}
