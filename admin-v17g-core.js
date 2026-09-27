@@ -8,11 +8,12 @@
   const welcome=$g('adminDashboardTop');
   const quick=document.createElement('div');quick.className='v17g-quickbar';quick.innerHTML=`<div class="v17g-quick-actions">
     <button type="button" class="primary" data-jump="todayCommandSection">Today</button>
+    <button type="button" data-jump="v20UpcomingSection">Upcoming Bookings</button>
     <button type="button" data-jump="quickBookingForm">+ New Booking</button>
     <button type="button" data-jump="inquirySection">Inquiries</button>
-    <button type="button" data-jump="clientHubSection">Clients</button>
-    <button type="button" data-jump="programHubSection">Programs</button>
-    <button type="button" data-jump="adminReportsSection">Reports</button>
+    <button type="button" data-jump="paymentDashboardSection">Payment Dashboard</button>
+    <button type="button" data-jump="v20PastSection">Needs Closing</button>
+    <button type="button" data-jump="v20PaymentSection">Collection</button>
   </div><div><span id="v17gFreshness" class="v17g-freshness">Live data</span> <button id="v17gRefresh" type="button" class="v17g-refresh">↻ Refresh</button></div>`;
   welcome?.insertAdjacentElement('afterend',quick);quick.querySelectorAll('[data-jump]').forEach(b=>b.onclick=()=>jump(b.dataset.jump));
 
@@ -110,12 +111,24 @@
 
   // Mobile dock for daily admin use.
   const dock=document.createElement('nav');dock.className='v17g-mobile-dock';dock.setAttribute('aria-label','Admin quick actions');dock.innerHTML=`
-    <button type="button" data-jump="todayCommandSection"><b>◷</b>Today</button>
-    <button type="button" data-jump="quickBookingForm"><b>＋</b>Book</button>
+    <button type="button" data-jump="adminDashboardTop"><b>⌂</b>Dashboard</button>
     <button type="button" class="alert" data-count="0"><b>●</b>Alerts</button>
-    <button type="button" data-jump="clientHubSection"><b>♙</b>Clients</button>
+    <button type="button" data-jump="paymentDashboardSection"><b>₱</b>Finances</button>
     <button type="button" class="menu"><b>☰</b>Menu</button>`;admin.appendChild(dock);
   dock.querySelectorAll('[data-jump]').forEach(b=>b.onclick=()=>jump(b.dataset.jump));dock.querySelector('.alert').onclick=()=>$g('adminNotificationBtn')?.click();dock.querySelector('.menu').onclick=()=>$g('adminMenuBtn')?.click();
+
+  // Temporary Back to Top control: visible only during active scrolling.
+  const backTop=document.createElement('button');backTop.type='button';backTop.className='v20-back-to-top';backTop.setAttribute('aria-label','Back to top');backTop.innerHTML='↑ <span>Top</span>';admin.appendChild(backTop);
+  backTop.onclick=()=>document.getElementById('adminDashboardTop')?.scrollIntoView({behavior:'smooth',block:'start'});
+  let lastY=window.scrollY,lastAt=performance.now(),hideTopTimer=null;
+  window.addEventListener('scroll',()=>{
+    const now=performance.now(),y=window.scrollY,dy=Math.abs(y-lastY),dt=Math.max(1,now-lastAt),speed=dy/dt;
+    lastY=y;lastAt=now;
+    clearTimeout(hideTopTimer);
+    if(y>480&&speed>.08)backTop.classList.add('show');
+    else if(y<=480)backTop.classList.remove('show');
+    hideTopTimer=setTimeout(()=>backTop.classList.remove('show'),850);
+  },{passive:true});
 
   // Make deep links/section jumps land below sticky bars.
   document.querySelectorAll('#adminView main section[id],#quickBookingForm').forEach(el=>el.style.scrollMarginTop='128px');
