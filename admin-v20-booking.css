@@ -1,0 +1,7 @@
+/* PICKYLA v20 Batch 2 - Admin booking court */
+.v20-admin-court-wrap{border:1px solid #e5e0d3;border-radius:14px;padding:13px;background:#faf9f5}
+.v20-admin-court-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.v20-admin-court-wrap>small{display:block;color:var(--muted);font-size:9px;margin-top:8px}
+.v20-admin-logo-link{display:flex;align-items:center;text-decoration:none}
+.v20-manual-booking-btn{margin-top:12px;width:max-content}
+@media(max-width:640px){.v20-admin-court-grid{grid-template-columns:1fr}.v20-manual-booking-btn{width:100%}}
