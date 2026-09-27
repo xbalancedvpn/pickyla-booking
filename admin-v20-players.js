@@ -59,12 +59,12 @@
 
   function applyPlayers(){
     renameStatic();
-    const c=compact('clientList','v20PlayerListToggle',5,'players');
+    const c=compact('clientList','v20PlayerListToggle',3,'players');
     const count=byId('clientCountLabel');
     if(count)count.textContent=count.textContent.replace(/clients?/i,m=>m.toLowerCase().startsWith('client')?(m.endsWith('s')?'players':'player'):m);
     return c;
   }
-  function applyHistory(){renameStatic();return compact('clientSessionHistory','v20PlayerHistoryToggle',5,'player session history');}
+  function applyHistory(){renameStatic();return compact('clientSessionHistory','v20PlayerHistoryToggle',3,'player session history');}
 
   function wrap(){
     if(typeof loadV17Clients==='function'&&!window.__pickylaV20PlayerLoad){
