@@ -86,6 +86,7 @@
         action.textContent='Edit';action.classList.add('v17g-client-edit','v17g-client-list-edit');
         action.onclick=async e=>{e.preventDefault();e.stopPropagation();if(typeof openV17Client==='function')await openV17Client(client.id);const current=(typeof v17SelectedClient!=='undefined'&&v17SelectedClient?.id===client.id)?v17SelectedClient:client;openEdit(current);};
       });
+      window.pickylaV20Players?.applyPlayers?.();
     };
     if($m('clientSearch'))$m('clientSearch').oninput=renderV17Clients;
     setTimeout(()=>{if(typeof v17Clients!=='undefined')renderV17Clients();},300);
