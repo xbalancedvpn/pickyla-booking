@@ -69,57 +69,96 @@
       '<div class="v20-ops-actions">'+actions+'</div></article>';
   }
   let courtTarget=null;
-  function ensureCourtDialog(){
-    let dlg=byId('v20CourtDialog');
-    if(dlg)return dlg;
-    dlg=document.createElement('dialog');
-    dlg.id='v20CourtDialog';
-    dlg.className='v20-court-dialog';
-    dlg.innerHTML='<form method="dialog" class="v20-modal-card" id="v20CourtForm">'+
-      '<button type="button" class="v20-modal-x" id="v20CourtClose">×</button>'+
-      '<span class="eyebrow">BOOKING COURT</span><h2 id="v20CourtTitle">Set Court</h2>'+
-      '<p id="v20CourtBookingMeta" class="panel-note"></p>'+
-      '<label>Court<select id="v20CourtSelect"><option value="">Court not decided yet</option><option>NANOMOLY</option><option>DINK VALLEY</option><option>HC SANTIAGO</option><option>CASA PLAY</option><option>COURTYARD</option><option value="OTHERS">OTHERS</option></select></label>'+
-      '<label id="v20CourtOtherWrap" class="hidden">Other court<input id="v20CourtOther" maxlength="120" placeholder="Enter court name"></label>'+
-      '<div class="v20-modal-actions"><button type="button" id="v20CourtCancel" class="secondary">Cancel</button><button type="submit" class="primary">Save Court</button></div>'+
-    '</form>';
-    document.body.appendChild(dlg);
-    const select=byId('v20CourtSelect'),otherWrap=byId('v20CourtOtherWrap');
-    select.onchange=()=>otherWrap.classList.toggle('hidden',select.value!=='OTHERS');
-    byId('v20CourtClose').onclick=()=>dlg.close();
-    byId('v20CourtCancel').onclick=()=>dlg.close();
-    byId('v20CourtForm').onsubmit=async e=>{
-      e.preventDefault();
-      if(!courtTarget)return dlg.close();
-      let court=select.value;
-      if(court==='OTHERS')court=String(byId('v20CourtOther').value||'').trim();
-      if(select.value==='OTHERS'&&!court)return byId('v20CourtOther').focus();
-      const strip=window.pickylaV20Court?.stripCourtLine||((t)=>String(t||'').replace(/^Court:\\s*.+(?:\\r?\\n)?/mi,'').trim());
-      const base=strip(courtTarget.notes||'');
-      const notes=court?('Court: '+court+(base?'\n'+base:'')):base;
-      const save=dlg.querySelector('button[type="submit"]'),old=save.textContent;
-      save.disabled=true;save.textContent='Saving…';
-      try{
-        const {error}=await db.from('bookings').update({notes}).eq('id',courtTarget.id);
-        if(error)throw error;
-        dlg.close();courtTarget=null;await loadOps(true);
-      }catch(err){alert(err.message||'Could not update court.');}
-      finally{save.disabled=false;save.textContent=old;}
-    };
-    return dlg;
+  function ensureCourtModal(){
+    let modal=byId('v20CourtModal');
+    if(modal)return modal;
+    modal=document.createElement('div');
+    modal.id='v20CourtModal';
+    modal.className='v20-court-modal hidden';
+    modal.innerHTML='<div class="v20-court-backdrop" data-court-close></div>'+
+      '<form id="v20CourtForm" class="v20-court-card" novalidate>'+
+        '<button type="button" class="v20-court-x" data-court-close aria-label="Close">×</button>'+
+        '<span class="eyebrow">BOOKING COURT</span>'+
+        '<h2 id="v20CourtTitle">Set Court</h2>'+
+        '<p id="v20CourtBookingMeta" class="panel-note"></p>'+
+        '<label>Court<select id="v20CourtSelect">'+
+          '<option value="">Court not decided yet</option>'+
+          '<option value="NANOMOLY">NANOMOLY</option>'+
+          '<option value="DINK VALLEY">DINK VALLEY</option>'+
+          '<option value="HC SANTIAGO">HC SANTIAGO</option>'+
+          '<option value="CASA PLAY">CASA PLAY</option>'+
+          '<option value="COURTYARD">COURTYARD</option>'+
+          '<option value="OTHERS">OTHERS</option>'+
+        '</select></label>'+
+        '<label id="v20CourtOtherWrap" class="hidden">Other court<input id="v20CourtOther" maxlength="120" placeholder="Enter court name"></label>'+
+        '<div id="v20CourtError" class="v20-court-error hidden"></div>'+
+        '<div class="v20-court-actions"><button type="button" class="secondary" data-court-close>Cancel</button><button type="submit" class="primary">Save Court</button></div>'+
+      '</form>';
+    document.body.appendChild(modal);
+
+    const select=byId('v20CourtSelect');
+    select.addEventListener('change',()=>{
+      byId('v20CourtOtherWrap').classList.toggle('hidden',select.value!=='OTHERS');
+      byId('v20CourtError').classList.add('hidden');
+    });
+    modal.querySelectorAll('[data-court-close]').forEach(x=>x.addEventListener('click',()=>closeCourtModal()));
+    byId('v20CourtForm').addEventListener('submit',saveCourtModal);
+    return modal;
   }
-  function openCourtDialog(b){
-    const dlg=ensureCourtDialog(),select=byId('v20CourtSelect'),other=byId('v20CourtOther');
+  function closeCourtModal(){
+    const modal=byId('v20CourtModal');if(!modal)return;
+    modal.classList.add('hidden');
+    document.body.classList.remove('v20-modal-open');
+    courtTarget=null;
+  }
+  function openCourtModal(b){
+    const modal=ensureCourtModal(),select=byId('v20CourtSelect'),other=byId('v20CourtOther');
     courtTarget=b;
     const current=courtOf(b)==='Court not decided yet'?'':courtOf(b);
-    const options=[...select.options].map(o=>o.value);
+    const optionValues=[...select.options].map(o=>o.value);
     if(!current){select.value='';other.value='';}
-    else if(options.includes(current)){select.value=current;other.value='';}
+    else if(optionValues.includes(current)){select.value=current;other.value='';}
     else{select.value='OTHERS';other.value=current;}
     byId('v20CourtOtherWrap').classList.toggle('hidden',select.value!=='OTHERS');
+    byId('v20CourtError').classList.add('hidden');
     byId('v20CourtTitle').textContent=current?'Change Court':'Set Court';
     byId('v20CourtBookingMeta').textContent=(b.client_name||'Player')+' • '+String(b.session_date||'')+' • '+hour(b.start_hour)+'–'+hour(b.end_hour);
-    dlg.showModal();
+    modal.classList.remove('hidden');
+    document.body.classList.add('v20-modal-open');
+    setTimeout(()=>select.focus(),0);
+  }
+  async function saveCourtModal(e){
+    e.preventDefault();
+    if(!courtTarget)return;
+    const select=byId('v20CourtSelect'),other=byId('v20CourtOther'),errorBox=byId('v20CourtError');
+    let court=select.value;
+    if(court==='OTHERS')court=String(other.value||'').trim();
+    if(select.value==='OTHERS'&&!court){
+      errorBox.textContent='Enter the court name.';
+      errorBox.classList.remove('hidden');
+      other.focus();
+      return;
+    }
+    const strip=window.pickylaV20Court?.stripCourtLine||((t)=>String(t||'').replace(/^Court:\s*.+(?:\r?\n)?/mi,'').trim());
+    const base=strip(courtTarget.notes||'');
+    const notes=court?('Court: '+court+(base?'\n'+base:'')):base;
+    const save=e.submitter,old=save.textContent;
+    save.disabled=true;save.textContent='Saving…';errorBox.classList.add('hidden');
+    try{
+      const {error}=await db.from('bookings').update({notes}).eq('id',courtTarget.id);
+      if(error)throw error;
+
+      const local=state.rows.find(x=>String(x.id)===String(courtTarget.id));
+      if(local)local.notes=notes;
+      closeCourtModal();
+      renderAll();
+      await loadOps(true);
+    }catch(err){
+      errorBox.textContent=err.message||'Could not update court.';
+      errorBox.classList.remove('hidden');
+    }finally{
+      save.disabled=false;save.textContent=old;
+    }
   }
 
   function bindActions(list,rows){
@@ -140,7 +179,6 @@
           if(typeof updatePayment==='function')updatePayment({...b,amount_paid:paidFor(b)});
           return;
         }
-        if(act==='court'){openCourtDialog(b);return;}
         if(act==='status'&&typeof setV17SessionStatus==='function'){
           await setV17SessionStatus({...b,amount_paid:paidFor(b)},btn.dataset.status);
           await loadOps(true);
@@ -195,7 +233,22 @@
     }finally{state.loading=null;}
   }
   function wire(){
-    ensureCourtDialog();
+    ensureCourtModal();
+    document.addEventListener('click',async e=>{
+      const btn=e.target.closest?.('[data-v20-act="court"]');
+      if(!btn)return;
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      const id=String(btn.dataset.id||'');
+      let b=state.rows.find(x=>String(x.id)===id);
+      if(!b){
+        const {data,error}=await db.from('bookings').select('*').eq('id',id).maybeSingle();
+        if(error)return;
+        b=data;
+      }
+      if(b)openCourtModal(b);
+    },true);
     [['upcoming','v20UpcomingToggle','v20UpcomingSection'],['past','v20PastToggle','v20PastSection'],['payment','v20PaymentToggle','v20PaymentSection'],['completed','v20CompletedToggle','v20CompletedSection']].forEach(([kind,id,sectionId])=>{
       const btn=byId(id);if(btn)btn.onclick=()=>{
         state.expanded[kind]=!state.expanded[kind];
