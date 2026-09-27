@@ -20,3 +20,5 @@
 .v20-block-selection>span{font-size:10px;font-weight:900;color:#333}.v20-block-selection>div{display:flex;gap:7px}
 .v20-block-selection button{border-radius:10px;padding:9px 11px;font-size:10px;font-weight:900}
 @media(max-width:620px){.v20-block-selection{align-items:stretch;flex-direction:column}.v20-block-selection>div{display:grid;grid-template-columns:1fr 1fr}}
+
+.v20-block-slot.range-start{box-shadow:inset 0 0 0 3px #f5c400!important}
