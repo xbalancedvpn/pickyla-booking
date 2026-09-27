@@ -42,7 +42,7 @@
       btn=document.createElement('button');btn.id=buttonId;btn.type='button';btn.className='secondary';
       row.appendChild(btn);list.insertAdjacentElement('afterend',row);
       btn.dataset.expanded='false';
-      btn.onclick=()=>{btn.dataset.expanded=btn.dataset.expanded==='true'?'false':'true';apply();};
+      btn.onclick=()=>{btn.dataset.expanded=btn.dataset.expanded==='true'?'false':'true';apply();requestAnimationFrame(()=>list.closest('section')?.scrollIntoView({behavior:'smooth',block:'start'}));};
     }
     function apply(){
       const items=[...list.children].filter(el=>!el.classList.contains('empty'));
@@ -98,5 +98,6 @@
       });
     }catch(_e){}
   }
+  window.pickylaV20Players={applyPlayers,applyHistory,renameStatic};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
