@@ -196,8 +196,12 @@
   }
   function wire(){
     ensureCourtDialog();
-    [['upcoming','v20UpcomingToggle'],['past','v20PastToggle'],['payment','v20PaymentToggle'],['completed','v20CompletedToggle']].forEach(([kind,id])=>{
-      const btn=byId(id);if(btn)btn.onclick=()=>{state.expanded[kind]=!state.expanded[kind];renderAll();};
+    [['upcoming','v20UpcomingToggle','v20UpcomingSection'],['past','v20PastToggle','v20PastSection'],['payment','v20PaymentToggle','v20PaymentSection'],['completed','v20CompletedToggle','v20CompletedSection']].forEach(([kind,id,sectionId])=>{
+      const btn=byId(id);if(btn)btn.onclick=()=>{
+        state.expanded[kind]=!state.expanded[kind];
+        renderAll();
+        requestAnimationFrame(()=>byId(sectionId)?.scrollIntoView({behavior:'smooth',block:'start'}));
+      };
     });
     byId('collectionAlertSection')?.classList.add('v20-ops-legacy-hidden');
     byId('paymentForm')?.addEventListener('submit',()=>setTimeout(()=>loadOps(true),900));
