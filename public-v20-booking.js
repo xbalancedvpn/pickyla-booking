@@ -1,7 +1,7 @@
 // PICKYLA v20 Batch 2 - public booking court workflow
 (function(){
   const byId=id=>document.getElementById(id);
-  const COURTS=['NANOMOLY','DINK VALLEY','HC SANTIAGO','CASA PLAY','COURTYARD','OTHERS'];
+  const COURTS=['NO COURT YET','NANOMOLY','DINK VALLEY','HC SANTIAGO','CASA PLAY','COURTYARD','OTHERS'];
 
   function clean(v){return String(v||'').trim().replace(/\s+/g,' ');}
   function courtValue(){
