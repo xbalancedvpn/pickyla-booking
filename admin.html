@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="v20-weeknav.css?v=20week1">
   <link rel="stylesheet" href="admin-v20-players.css?v=20players1">
   <link rel="stylesheet" href="admin-v20-pricing.css?v=20price1">
+  <link rel="stylesheet" href="admin-v20-gallery.css?v=20gallery1">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
@@ -36,7 +37,7 @@
       <a href="#adminReportsSection">Reports</a>
       <span class="v20-admin-nav-group">Public Content</span>
       <a href="#weeklyShareSection">Weekly Schedule</a>
-      <a href="#shareToolsSection">Marketing & Testimonials</a>
+      <a href="#galleryAdminSection">Pickyla Moments</a><a href="#shareToolsSection">Marketing & Testimonials</a>
       <span class="v20-admin-nav-group">Tools</span>
       <a href="#bookingToolsSection">Manual Booking & Paste</a>
     </nav><a class="admin-menu-public" href="index.html">Open Public Site ↗</a></aside><main class="admin-wrap">
@@ -126,6 +127,15 @@
   <section class="marketing-tools panel">
     <div class="panel-head"><div><span class="eyebrow">MARKETING TOOLS</span><h2>Public site QR</h2><p class="panel-note">Download a permanent QR code for posters, court signage and social posts.</p></div><span class="panel-tag">SHARE</span></div>
     <div class="qr-tool"><div id="publicQrCode" class="qr-code-box"></div><div class="qr-tool-copy"><strong>pickyla-coaching.xbalanced.net</strong><small>Always points to the public coaching site.</small><button id="downloadPublicQr" class="secondary" type="button">Download QR PNG</button></div></div>
+  </section>
+  <section class="panel v20-gallery-admin-panel" id="galleryAdminSection">
+    <div class="panel-head"><div><span class="eyebrow">PICKYLA MOMENTS</span><h2>Photo carousel</h2><p class="panel-note">Upload, hide, reorder, or delete the photos shown before Testimonials on the public site.</p></div><button id="refreshGalleryBtn" class="secondary" type="button">Refresh</button></div>
+    <form id="galleryUploadForm" class="v20-gallery-upload">
+      <label>Image<input id="galleryFile" type="file" accept="image/jpeg,image/png,image/webp" required></label>
+      <label>Caption <small>(optional)</small><textarea id="galleryCaption" rows="2" maxlength="180" placeholder="Optional caption"></textarea></label>
+      <button id="galleryUploadBtn" class="primary" type="submit">Upload Photo</button>
+    </form>
+    <div id="galleryAdminList" class="v20-gallery-admin-list"><div class="empty">Loading gallery…</div></div>
   </section>
   <section class="testimonial-admin panel">
     <div class="panel-head"><div><span class="eyebrow">TESTIMONIALS</span><h2>Client stories</h2><p class="panel-note">Public submissions arrive here as Pending. Review or edit them first, then approve and publish when ready.</p></div><button id="addTestimonialBtn" class="secondary" type="button">+ Add Testimonial</button></div>
@@ -257,4 +267,4 @@
   <div class="editor-actions"><button id="cancelProgressCard" type="button" class="soft-danger">Close</button><button id="downloadProgressCard" type="button" class="primary">Download PNG</button></div>
 </div></dialog>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script><script src="admin.js?v=17e"></script><script src="admin-v17f.js?v=17f"></script><script src="admin-v17g.js?v=17g"></script><script src="admin-v20-ops.js?v=20ops1"></script><script src="admin-v20-booking.js?v=20book1"></script><script src="admin-v20-pricing.js?v=20price1"></script><script src="v20-weeknav.js?v=20week1"></script><script src="admin-v20-players.js?v=20players1"></script><script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('service-worker.js').catch(()=>{}));}</script></body></html>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script><script src="admin.js?v=17e"></script><script src="admin-v17f.js?v=17f"></script><script src="admin-v17g.js?v=17g"></script><script src="admin-v20-ops.js?v=20ops1"></script><script src="admin-v20-booking.js?v=20book1"></script><script src="admin-v20-pricing.js?v=20price1"></script><script src="admin-v20-gallery.js?v=20gallery1"></script><script src="v20-weeknav.js?v=20week1"></script><script src="admin-v20-players.js?v=20players1"></script><script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('service-worker.js').catch(()=>{}));}</script></body></html>
