@@ -53,11 +53,11 @@
     if(b.client_id)actions+='<button type="button" data-v20-act="profile" data-id="'+esc(b.id)+'">Player Profile</button>';
     actions+='<button type="button" data-v20-act="card" data-id="'+esc(b.id)+'">Confirmation Card</button>';
     if(p.balance>0.001&&!b.client_program_id)actions+='<button type="button" class="primary" data-v20-act="pay" data-id="'+esc(b.id)+'">'+(kind==='payment'?'Record Remaining Payment':'Record Payment')+'</button>';
-    if(kind==='past'){
-      actions+='<button type="button" class="v20-complete" data-v20-act="status" data-status="completed" data-id="'+esc(b.id)+'">Completed</button>';
-      actions+='<button type="button" data-v20-act="status" data-status="no_show" data-id="'+esc(b.id)+'">No Show</button>';
-      actions+='<button type="button" data-v20-act="status" data-status="client_cancelled" data-id="'+esc(b.id)+'">Player Cancelled</button>';
-      actions+='<button type="button" data-v20-act="status" data-status="coach_cancelled" data-id="'+esc(b.id)+'">Coach Cancelled</button>';
+    if(kind==='upcoming'||kind==='past'){
+      actions+='<button type="button" class="v20-complete" data-v20-act="status" data-status="completed" data-id="'+esc(b.id)+'">Mark Completed</button>';
+      if(kind==='past')actions+='<button type="button" data-v20-act="status" data-status="no_show" data-id="'+esc(b.id)+'">No Show</button>';
+      actions+='<button type="button" class="v20-cancel" data-v20-act="status" data-status="client_cancelled" data-id="'+esc(b.id)+'">Player Cancelled</button>';
+      actions+='<button type="button" class="v20-cancel" data-v20-act="status" data-status="coach_cancelled" data-id="'+esc(b.id)+'">Coach Cancelled</button>';
     }
     return '<article class="v20-ops-card">'+
       '<div class="v20-ops-card-top"><div><span class="v20-ops-date">'+esc(date)+' • '+hour(b.start_hour)+'–'+hour(b.end_hour)+'</span>'+
