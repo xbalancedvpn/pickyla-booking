@@ -1,0 +1,12 @@
+/* Pickyla v20 - tap rating buttons */
+.v20-rating-legend{grid-column:1/-1;display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:10px;border-radius:14px;background:#111;color:#fff}
+.v20-rating-legend span{display:grid;gap:2px;text-align:center;font-size:9px;line-height:1.2;color:#cfcfcf}
+.v20-rating-legend b{font:900 16px Manrope;color:#f5c400}
+.v20-rating-field{display:grid!important;gap:8px!important}
+.v20-rating-source{display:none!important}
+.v20-rating-control{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.v20-rating-chip{border:1px solid #d8d3c6;background:#fff;border-radius:10px;padding:10px 5px;font:900 13px Manrope;cursor:pointer;color:#222}
+.v20-rating-chip.active{background:#111;color:#f5c400;border-color:#111;box-shadow:inset 0 0 0 2px #f5c400}
+.v20-rating-caption{font-size:10px;color:#777;font-weight:700}
+.v20-rating-caption.selected{color:#111}
+@media(max-width:720px){.v20-rating-legend{grid-template-columns:repeat(5,minmax(0,1fr));padding:8px 5px}.v20-rating-legend span{font-size:7px}.v20-rating-legend b{font-size:14px}}
