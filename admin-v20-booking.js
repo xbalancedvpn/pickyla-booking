@@ -6,7 +6,7 @@
   function clean(v){return String(v||'').trim().replace(/\s+/g,' ');}
   function courtFromText(text){
     const m=String(text||'').match(/^Court:\s*(.+)$/mi);
-    const value=clean(m?.[1]||'');return /^(not decided yet|to be decided|tbd|none)$/i.test(value)?'':value;
+    const value=clean(m?.[1]||'');return /^(no court yet|not decided yet|to be decided|tbd|none)$/i.test(value)?'':value;
   }
   function courtFromBooking(b){return clean(b?.court_name)||courtFromText(b?.notes)||'Not specified';}
   function stripCourtLine(text){return String(text||'').replace(/^Court:\s*.+(?:\r?\n)?/mi,'').trim();}
