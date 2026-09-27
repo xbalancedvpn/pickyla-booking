@@ -41,3 +41,17 @@
 
 .inquiry-status-stack{display:grid;justify-items:end;gap:5px}
 .v20-multi-tag{display:inline-flex;align-items:center;border-radius:999px;padding:5px 8px;background:#111;color:#f5c400;font-size:8px;font-weight:900;letter-spacing:.6px}
+
+body.v20-modal-open{overflow:hidden}
+.v20-court-modal{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;padding:16px}
+.v20-court-modal.hidden{display:none!important}
+.v20-court-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.58);backdrop-filter:blur(3px)}
+.v20-court-card{position:relative;z-index:1;width:min(470px,100%);display:grid;gap:14px;padding:22px;border-radius:20px;background:#fff;box-shadow:0 28px 80px rgba(0,0,0,.32)}
+.v20-court-card h2{margin:0;font:800 24px Manrope}
+.v20-court-card label{display:grid;gap:6px;font-size:11px;font-weight:800}
+.v20-court-card select,.v20-court-card input{width:100%;border:1px solid #ddd7ca;border-radius:11px;padding:12px;background:#fff;font:inherit}
+.v20-court-x{position:absolute;right:14px;top:14px;border:0;width:34px;height:34px;border-radius:50%;background:#efeee9;font-size:20px;cursor:pointer}
+.v20-court-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
+.v20-court-actions button{border:0;border-radius:10px;padding:11px;font-size:10px;font-weight:900;cursor:pointer}
+.v20-court-actions .primary{background:#111;color:#f5c400}.v20-court-actions .secondary{background:#efeee9;color:#111}
+.v20-court-error{padding:9px 10px;border-radius:10px;background:#fff0ee;color:#96362b;font-size:10px;font-weight:800}
