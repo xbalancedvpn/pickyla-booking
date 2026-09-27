@@ -1,0 +1,11 @@
+/* Pickyla v20 gallery admin */
+.v20-gallery-admin-panel{grid-column:1/-1}
+.v20-gallery-upload{display:grid;grid-template-columns:1fr 1.2fr auto;gap:10px;align-items:end;margin:14px 0}
+.v20-gallery-upload label{display:grid;gap:6px;font-size:10px;font-weight:800;color:var(--muted)}
+.v20-gallery-upload input,.v20-gallery-upload textarea{width:100%;border:1px solid var(--line);border-radius:12px;background:#fff;padding:11px}
+.v20-gallery-admin-list{display:grid;gap:10px}
+.v20-gallery-admin-row{display:grid;grid-template-columns:120px 1fr;gap:12px;padding:10px;border:1px solid var(--line);border-radius:14px;background:#fff}
+.v20-gallery-admin-row img{width:120px;height:82px;object-fit:cover;border-radius:10px;background:#111}
+.v20-gallery-admin-copy{display:grid;gap:5px;align-content:center}.v20-gallery-admin-copy small{color:var(--muted)}
+.v20-gallery-admin-actions{display:flex;gap:6px;flex-wrap:wrap}.v20-gallery-admin-actions button{padding:7px 9px;border-radius:8px;border:1px solid var(--line);background:#faf9f5;font-weight:800;font-size:9px}.v20-gallery-admin-actions .danger{color:#8b3a33;background:#fff0ee}
+@media(max-width:680px){.v20-gallery-upload{grid-template-columns:1fr}.v20-gallery-admin-row{grid-template-columns:86px 1fr}.v20-gallery-admin-row img{width:86px;height:72px}}
