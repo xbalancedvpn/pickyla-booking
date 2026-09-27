@@ -1,0 +1,36 @@
+/* PICKYLA v20 Batch 1 - Operations */
+.v20-ops-flow{display:grid;gap:16px;margin:0 0 24px}
+.v20-ops-heading{padding:4px 2px 0}
+.v20-ops-heading h2{font:800 25px Manrope;margin:4px 0 5px}
+.v20-ops-heading p{margin:0;color:var(--muted);font-size:12px;line-height:1.55}
+.v20-ops-panel{margin:0}
+.v20-ops-panel .panel-head{align-items:center}
+.v20-ops-count{display:grid;place-items:center;min-width:42px;height:42px;padding:0 10px;border-radius:13px;background:#111;color:#f5c400;font:800 16px Manrope}
+.v20-ops-list{display:grid;gap:10px}
+.v20-ops-card{border:1px solid var(--line);border-radius:16px;background:#fff;padding:15px}
+.v20-ops-card-top{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
+.v20-ops-card h3{margin:5px 0 4px;font:800 17px Manrope}
+.v20-ops-card p{margin:0;color:var(--muted);font-size:11px;line-height:1.55}
+.v20-ops-date{font-size:10px;font-weight:800;color:#777}
+.v20-ops-state{white-space:nowrap;border-radius:999px;padding:6px 9px;font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.4px;background:#efefec;color:#555}
+.v20-ops-state.upcoming{background:#fff5c9;color:#6b5200}
+.v20-ops-state.past{background:#fff0ee;color:#8b3a33}
+.v20-ops-state.payment{background:#fff1b8;color:#755a00}
+.v20-ops-state.completed{background:#e6f4e4;color:#2b642d}
+.v20-ops-money{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-top:11px;padding-top:11px;border-top:1px solid #efede6}
+.v20-ops-money strong{font:800 17px Manrope}
+.v20-ops-money span{font-size:10px;color:var(--muted);text-align:right}
+.v20-ops-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+.v20-ops-actions button{border:0;border-radius:9px;padding:8px 9px;font-size:9px;font-weight:800;background:#f1f0eb;color:#222;cursor:pointer}
+.v20-ops-actions button.primary{background:#111;color:#f5c400}
+.v20-ops-actions button.v20-complete{background:#e3f4df;color:#2f6331}
+.v20-ops-toggle-row{display:flex;justify-content:center;margin-top:12px}
+.v20-ops-toggle-row button{min-width:145px}
+.v20-ops-legacy-hidden{display:none!important}
+@media(max-width:680px){
+  .v20-ops-card-top{display:block}
+  .v20-ops-state{display:inline-block;margin-top:9px}
+  .v20-ops-money{align-items:flex-start;flex-direction:column}
+  .v20-ops-money span{text-align:left}
+  .v20-ops-actions button{flex:1 1 calc(50% - 7px)}
+}
