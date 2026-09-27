@@ -1,0 +1,10 @@
+/* Pickyla v20 custom Admin date picker */
+.v20-date-input{cursor:pointer!important;background:#fff!important}
+.v20-date-dialog{width:min(430px,calc(100% - 24px));border:0;border-radius:22px;padding:0;box-shadow:0 30px 90px rgba(0,0,0,.28)}
+.v20-date-card{padding:20px;background:#fff}
+.v20-date-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.v20-date-head h2{margin:4px 0 0;font:800 22px Manrope}.v20-date-head>button{border:0;width:36px;height:36px;border-radius:50%;background:#efeee9;font-size:22px}
+.v20-date-nav{display:grid;grid-template-columns:38px 1fr 38px;align-items:center;gap:8px;margin:16px 0 8px}.v20-date-nav button{height:36px;border:1px solid #e0dbcf;background:#fff;border-radius:10px;font-size:20px}.v20-date-nav strong{text-align:center;font:800 14px Manrope}
+.v20-date-weekdays,.v20-date-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.v20-date-weekdays span{text-align:center;font-size:9px;font-weight:900;color:#817a6c;padding:6px 0}
+.v20-date-grid button,.v20-date-blank{aspect-ratio:1;border-radius:10px}.v20-date-grid button{border:1px solid #ece7dc;background:#faf9f5;font-weight:800;color:#222;cursor:pointer}.v20-date-grid button.today{box-shadow:inset 0 0 0 2px #f5c400}.v20-date-grid button.selected{background:#111;color:#f5c400;border-color:#111}.v20-date-grid button.disabled{opacity:.28;cursor:not-allowed}
+.v20-date-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}.v20-date-actions button{border-radius:10px;padding:9px 12px;font-size:10px;font-weight:900}
