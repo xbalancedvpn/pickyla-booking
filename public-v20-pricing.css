@@ -1,0 +1,11 @@
+/* PICKYLA v20 pricing */
+.v20-public-price-preview{margin-top:14px;border-radius:14px;background:#111;color:#fff;padding:14px 16px;display:grid;gap:3px}
+.v20-public-price-preview span{font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:#d7d7d7;font-weight:800}
+.v20-public-price-preview strong{font:800 25px Manrope}
+.v20-public-price-preview small{color:#f5c400;font-size:10px;line-height:1.45}
+.v20-optional-chip{font-size:8px;font-weight:900;letter-spacing:.5px;color:#6a6a66;background:#efeee8;border-radius:999px;padding:5px 7px}
+
+#rates .rate-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+#rates .rate-card>small{display:block;margin-top:10px;color:var(--muted);font-size:11px;line-height:1.5}
+#booking .package-options{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:640px){#rates .rate-grid,#booking .package-options{grid-template-columns:1fr}}
