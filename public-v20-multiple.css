@@ -1,0 +1,13 @@
+/* Pickyla v20 multiple booking UI */
+.v20-booking-mode{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.v20-booking-mode button{border:1px solid #d9d4c8;background:#fff;border-radius:12px;padding:12px;font-weight:900;cursor:pointer;color:#222}
+.v20-booking-mode button.active{background:#111;color:#f5c400;border-color:#111}
+.v20-multi-panel{margin-bottom:16px;border:1px solid #ddd7c9;border-radius:16px;padding:14px;background:#fffdf5}
+.v20-multi-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}.v20-multi-head>div{display:grid;gap:3px}.v20-multi-head small{color:#777;line-height:1.45}.v20-multi-head label{font-size:10px;font-weight:800;display:flex;gap:7px;align-items:center}
+.v20-multi-session-list{display:grid;gap:8px;margin-top:12px}.v20-multi-empty{padding:14px;border:1px dashed #d6cfbd;border-radius:12px;color:#777;text-align:center;font-size:11px}
+.v20-multi-session{display:flex;justify-content:space-between;gap:12px;align-items:center;border:1px solid #e2ddd1;border-radius:12px;padding:11px;background:#fff}
+.v20-multi-session.active{border-color:#111;box-shadow:inset 0 0 0 1px #111}.v20-multi-session.conflict{border-color:#d78a80;background:#fff4f2}
+.v20-multi-session>div:first-child{display:grid;gap:2px}.v20-multi-session span{font-size:8px;font-weight:900;letter-spacing:.8px;color:#9b8a59}.v20-multi-session strong{font-size:12px}.v20-multi-session small{color:#666;font-size:10px}
+.v20-multi-session>div:last-child{display:flex;gap:6px}.v20-multi-session button{border:0;border-radius:8px;padding:7px 8px;font-size:9px;font-weight:800;background:#efeee9;cursor:pointer}.v20-multi-session button.remove{background:#fff0ee;color:#8b3a33}
+.calendar .day.v20-multi-selected{box-shadow:inset 0 0 0 2px #f5c400;background:#fff9d7}.calendar .day.v20-multi-active{background:#111!important;color:#f5c400!important;box-shadow:inset 0 0 0 2px #f5c400}
+@media(max-width:680px){.v20-multi-head{display:grid}.v20-multi-session{align-items:flex-start}.v20-multi-session>div:last-child{flex-direction:column}}
