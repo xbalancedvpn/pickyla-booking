@@ -6,7 +6,7 @@
   const hour=h=>{h=Number(h);if(h===24)return '12:00 MN';return (h%12||12)+':00 '+(h<12?'AM':'PM');};
   const reasons=['Coach Unavailable','Training','Tournament','Personal Schedule','Rest Day','Other'];
   const key=r=>({'Coach Unavailable':'unavailable','Training':'training','Tournament':'tournament','Personal Schedule':'personal','Rest Day':'rest'}[r]||'other');
-  let selectedHour=null,currentRows=new Map();
+  let selectedHour=null,currentRows=new Map(),mode='single',selectedHours=new Set();
 
   function reasonFromNotes(notes){
     const s=String(notes||'').trim();
@@ -22,10 +22,12 @@
     if(!host)return;
     const panel=document.createElement('section');
     panel.id='v20ScheduleBlockSection';panel.className='panel v20-block-panel';
-    panel.innerHTML='<div class="panel-head"><div><span class="eyebrow">SCHEDULE CONTROL</span><h2>Tournament / unavailable</h2><p class="panel-note">Select a date, then tap any open hour to block it. Booked hours are protected.</p></div><span class="panel-tag muted">HOURLY</span></div>'+
+    panel.innerHTML='<div class="panel-head"><div><span class="eyebrow">SCHEDULE CONTROL</span><h2>Tournament / unavailable</h2><p class="panel-note">Use Single Hour for different reasons, or Multiple Hours to apply one reason to several selected hours.</p></div><span class="panel-tag muted">HOURLY</span></div>'+
       '<label class="v20-block-date-label">Date<input id="v20BlockDate" type="date" data-date-title="Tournament / unavailable date"></label>'+
+      '<div class="v20-block-mode"><button type="button" class="active" data-block-mode="single">Single Hour</button><button type="button" data-block-mode="multiple">Multiple Hours</button></div>'+
       '<div class="v20-block-legend"><span><i class="reason-unavailable"></i>Unavailable</span><span><i class="reason-training"></i>Training</span><span><i class="reason-tournament"></i>Tournament</span><span><i class="reason-personal"></i>Personal</span><span><i class="reason-rest"></i>Rest Day</span><span><i class="reason-other"></i>Other</span></div>'+
-      '<div id="v20BlockSlots" class="v20-block-slots"><div class="empty">Loading hours…</div></div>';
+      '<div id="v20BlockSlots" class="v20-block-slots"><div class="empty">Loading hours…</div></div>'+
+      '<div id="v20BlockSelectionBar" class="v20-block-selection hidden"><span id="v20BlockSelectionCount">0 hours selected</span><div><button id="v20ClearBlockSelection" type="button" class="secondary">Clear</button><button id="v20BlockSelected" type="button" class="primary">Block Selected Hours</button></div></div>';
     host.insertBefore(panel,old||null);
 
     const dlg=document.createElement('dialog');dlg.id='v20BlockReasonDialog';dlg.className='v20-block-dialog';
@@ -41,8 +43,19 @@
     document.body.appendChild(dlg);
 
     const date=byId('v20BlockDate');date.value=today();
-    date.onchange=load;
+    date.onchange=()=>{selectedHours.clear();load();};
     window.pickylaV20DatePicker?.enhance?.(date);
+    panel.querySelectorAll('[data-block-mode]').forEach(btn=>btn.onclick=()=>{
+      mode=btn.dataset.blockMode;
+      panel.querySelectorAll('[data-block-mode]').forEach(x=>x.classList.toggle('active',x===btn));
+      selectedHours.clear();renderSelectionBar();load();
+    });
+    byId('v20ClearBlockSelection').onclick=()=>{selectedHours.clear();renderSelectionBar();load();};
+    byId('v20BlockSelected').onclick=()=>{
+      if(!selectedHours.size)return;
+      selectedHour=[...selectedHours].sort((a,b)=>a-b);
+      openReason(selectedHour);
+    };
     byId('v20BlockReason').onchange=()=>byId('v20BlockOtherWrap').classList.toggle('hidden',byId('v20BlockReason').value!=='Other');
     byId('v20BlockClose').onclick=()=>dlg.close();
     byId('v20BlockCancel').onclick=()=>dlg.close();
@@ -51,10 +64,22 @@
 
   function openReason(h){
     selectedHour=h;
-    byId('v20BlockTime').textContent=byId('v20BlockDate').value+' • '+hour(h)+'–'+hour(h+1);
+    const hours=Array.isArray(h)?h:[h];
+    const label=hours.length===1
+      ? hour(hours[0])+'–'+hour(hours[0]+1)
+      : hours.map(x=>hour(x)+'–'+hour(x+1)).join(', ');
+    byId('v20BlockTime').textContent=byId('v20BlockDate').value+' • '+label;
     byId('v20BlockReason').value='Coach Unavailable';byId('v20BlockOther').value='';
     byId('v20BlockOtherWrap').classList.add('hidden');byId('v20BlockPublic').checked=true;
     byId('v20BlockReasonDialog').showModal();
+  }
+  function renderSelectionBar(){
+    const bar=byId('v20BlockSelectionBar'),count=byId('v20BlockSelectionCount');
+    if(!bar||!count)return;
+    const n=selectedHours.size;
+    bar.classList.toggle('hidden',mode!=='multiple');
+    count.textContent=n+' hour'+(n===1?'':'s')+' selected';
+    byId('v20BlockSelected').disabled=n===0;
   }
   async function reopen(row,h){
     const ok=window.confirm?confirm('Reopen '+hour(h)+'–'+hour(h+1)+'?'):true;
@@ -68,12 +93,13 @@
     let reason=byId('v20BlockReason').value;
     if(reason==='Other')reason=String(byId('v20BlockOther').value||'').trim()||'Coach Unavailable';
     const note=(byId('v20BlockPublic').checked?'PUBLIC:':'PRIVATE:')+reason;
-    const payload={slot_date:byId('v20BlockDate').value,start_hour:selectedHour,status:'unavailable',notes:note,client_name:null,contact:null,coaching_type:null,rate:null,booking_id:null};
+    const hours=Array.isArray(selectedHour)?selectedHour:[selectedHour];
+    const payload=hours.map(h=>({slot_date:byId('v20BlockDate').value,start_hour:h,status:'unavailable',notes:note,client_name:null,contact:null,coaching_type:null,rate:null,booking_id:null}));
     const btn=byId('v20BlockReasonForm').querySelector('button[type="submit"]'),old=btn.textContent;btn.disabled=true;btn.textContent='Saving…';
     try{
       const {error}=await db.from('schedule_slots').upsert(payload,{onConflict:'slot_date,start_hour'});
       if(error)throw error;
-      byId('v20BlockReasonDialog').close();selectedHour=null;await refreshAll();
+      byId('v20BlockReasonDialog').close();selectedHour=null;selectedHours.clear();renderSelectionBar();await refreshAll();
     }catch(err){alert(err.message||'Could not block hour.');}
     finally{btn.disabled=false;btn.textContent=old;}
   }
@@ -84,6 +110,7 @@
     if(error){root.innerHTML='<div class="empty">'+error.message+'</div>';return;}
     currentRows=new Map((data||[]).map(r=>[Number(r.start_hour),r]));
     root.innerHTML='';
+    renderSelectionBar();
     for(let h=8;h<24;h++){
       const row=currentRows.get(h),status=row?.status||'available',btn=document.createElement('button');
       btn.type='button';btn.className='v20-block-slot '+status;
@@ -92,7 +119,16 @@
       else if(status==='unavailable'){const meta=reasonFromNotes(row.notes);detail=meta.reason+(meta.isPublic?' • Public':' • Private');btn.classList.add('block-'+key(meta.reason));}
       btn.innerHTML='<span>'+hour(h)+'–'+hour(h+1)+'</span><small>'+detail+'</small>';
       if(status==='unavailable')btn.onclick=()=>reopen(row,h);
-      else if(status==='available')btn.onclick=()=>openReason(h);
+      else if(status==='available'){
+        if(mode==='multiple'){
+          if(selectedHours.has(h))btn.classList.add('selected');
+          btn.onclick=()=>{
+            selectedHours.has(h)?selectedHours.delete(h):selectedHours.add(h);
+            btn.classList.toggle('selected',selectedHours.has(h));
+            renderSelectionBar();
+          };
+        }else btn.onclick=()=>openReason(h);
+      }
       root.appendChild(btn);
     }
   }
