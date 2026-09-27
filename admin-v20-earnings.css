@@ -1,0 +1,7 @@
+/* Pickyla v20 earnings chart controls */
+.v20-earnings-custom{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end;margin:4px 0 12px;padding:10px;border:1px solid #e4dfd2;border-radius:12px;background:#faf9f5}
+.v20-earnings-custom label{display:grid;gap:5px;font-size:9px;font-weight:900;color:#6f6755}
+.v20-earnings-custom select{width:100%;border:1px solid #d9d4c8;border-radius:9px;padding:9px 10px;background:#fff;font-size:10px;font-weight:700;color:#222}
+.v20-earnings-custom button{border:0;border-radius:9px;padding:10px 12px;background:#111;color:#f5c400;font-size:9px;font-weight:900;cursor:pointer}
+.v20-earnings-error{grid-column:1/-1;margin:0;padding:8px 10px;border-radius:8px;background:#fff0ee;color:#8b3a33;font-size:9px;font-weight:800}
+@media(max-width:640px){.v20-earnings-custom{grid-template-columns:1fr 1fr}.v20-earnings-custom button{grid-column:1/-1}}
