@@ -5,7 +5,20 @@
 .v20-public-price-preview small{color:#f5c400;font-size:10px;line-height:1.45}
 .v20-optional-chip{font-size:8px;font-weight:900;letter-spacing:.5px;color:#6a6a66;background:#efeee8;border-radius:999px;padding:5px 7px}
 
-#rates .rate-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+#rates .rate-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
 #rates .rate-card>small{display:block;margin-top:10px;color:var(--muted);font-size:11px;line-height:1.5}
 #booking .package-options{grid-template-columns:repeat(2,minmax(0,1fr))}
 @media(max-width:640px){#rates .rate-grid,#booking .package-options{grid-template-columns:1fr}}
+
+#rates{background:#0b0b0b;color:#f7f7f5}
+#rates .section-heading .eyebrow{color:#f5c400}
+#rates .section-heading h2{color:#fff}
+#rates .section-heading p{color:#aaa}
+#rates .rate-card{position:relative;overflow:hidden;background:#111!important;border:1px solid #2d2d2d!important;border-radius:18px!important;padding:22px!important;color:#fff!important}
+#rates .rate-card:before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:#f5c400}
+#rates .rate-card .pill{background:transparent!important;color:#f5c400!important;padding:0!important}
+#rates .rate-card h3{color:#fff!important;margin-top:10px!important}
+#rates .rate-card .price{font-family:Impact,'Arial Black',sans-serif;font-style:italic;color:#f5c400!important;font-size:42px!important;margin:14px 0 4px}
+#rates .rate-card .price span{font-size:inherit!important}
+#rates .rate-card p,#rates .rate-card small{color:#aaa!important}
+#rates .court-fee-note{background:#171717!important;border:1px solid #333!important;color:#cfcfcf!important}
