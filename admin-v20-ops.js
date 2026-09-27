@@ -16,6 +16,11 @@
     const total=Number(b.total_amount||0),paid=paidFor(b),balance=Math.max(0,total-paid);
     return {total,paid,balance,status:balance<=0.001?'Paid':paid>0?'Partial':'Unpaid'};
   }
+  function courtOf(b){
+    if(b?.court_name)return String(b.court_name).trim();
+    const m=String(b?.notes||'').match(/^Court:\\s*(.+)$/mi);
+    return String(m?.[1]||'Not specified').trim();
+  }
   function buckets(){
     const today=todayKey();
     const active=state.rows.filter(b=>!cancelled(b));
@@ -42,7 +47,7 @@
   function cardHtml(b,kind){
     const p=paymentInfo(b);
     const date=new Date(String(b.session_date)+'T12:00:00').toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'});
-    const court=b.court_name||'Not specified';
+    const court=courtOf(b);
     const stateLabel=kind==='past'?'Needs Closing':kind==='payment'?'Completed • Balance Due':kind==='completed'?'Completed':'Scheduled';
     let actions='';
     if(b.client_id)actions+='<button type="button" data-v20-act="profile" data-id="'+esc(b.id)+'">Player Profile</button>';
