@@ -8,7 +8,7 @@
   const hour=h=>{h=Number(h);if(h===24)return '12:00 MN';return (h%12||12)+':00 '+(h<12?'AM':'PM');};
   const cancelled=b=>b.status==='cancelled'||['client_cancelled','coach_cancelled'].includes(b.session_status);
   const state={rows:[],paid:new Map(),loading:null,expanded:{upcoming:false,past:false,payment:false,completed:false}};
-  const limits={upcoming:5,past:5,payment:5,completed:5};
+  const limits={upcoming:3,past:3,payment:3,completed:3};
 
   function adminActive(){const v=byId('adminView');return !!v&&!v.classList.contains('hidden');}
   function paidFor(b){return Number(state.paid.get(String(b.id)) ?? b.amount_paid ?? 0);}
@@ -68,6 +68,60 @@
       '<div class="v20-ops-money"><strong>'+money(p.total)+'</strong><span>'+esc(p.status)+' • Collected '+money(p.paid)+' • Balance '+money(p.balance)+'</span></div>'+
       '<div class="v20-ops-actions">'+actions+'</div></article>';
   }
+  let courtTarget=null;
+  function ensureCourtDialog(){
+    let dlg=byId('v20CourtDialog');
+    if(dlg)return dlg;
+    dlg=document.createElement('dialog');
+    dlg.id='v20CourtDialog';
+    dlg.className='v20-court-dialog';
+    dlg.innerHTML='<form method="dialog" class="v20-modal-card" id="v20CourtForm">'+
+      '<button type="button" class="v20-modal-x" id="v20CourtClose">×</button>'+
+      '<span class="eyebrow">BOOKING COURT</span><h2 id="v20CourtTitle">Set Court</h2>'+
+      '<p id="v20CourtBookingMeta" class="panel-note"></p>'+
+      '<label>Court<select id="v20CourtSelect"><option value="">Court not decided yet</option><option>NANOMOLY</option><option>DINK VALLEY</option><option>HC SANTIAGO</option><option>CASA PLAY</option><option>COURTYARD</option><option value="OTHERS">OTHERS</option></select></label>'+
+      '<label id="v20CourtOtherWrap" class="hidden">Other court<input id="v20CourtOther" maxlength="120" placeholder="Enter court name"></label>'+
+      '<div class="v20-modal-actions"><button type="button" id="v20CourtCancel" class="secondary">Cancel</button><button type="submit" class="primary">Save Court</button></div>'+
+    '</form>';
+    document.body.appendChild(dlg);
+    const select=byId('v20CourtSelect'),otherWrap=byId('v20CourtOtherWrap');
+    select.onchange=()=>otherWrap.classList.toggle('hidden',select.value!=='OTHERS');
+    byId('v20CourtClose').onclick=()=>dlg.close();
+    byId('v20CourtCancel').onclick=()=>dlg.close();
+    byId('v20CourtForm').onsubmit=async e=>{
+      e.preventDefault();
+      if(!courtTarget)return dlg.close();
+      let court=select.value;
+      if(court==='OTHERS')court=String(byId('v20CourtOther').value||'').trim();
+      if(select.value==='OTHERS'&&!court)return byId('v20CourtOther').focus();
+      const strip=window.pickylaV20Court?.stripCourtLine||((t)=>String(t||'').replace(/^Court:\\s*.+(?:\\r?\\n)?/mi,'').trim());
+      const base=strip(courtTarget.notes||'');
+      const notes=court?('Court: '+court+(base?'\n'+base:'')):base;
+      const save=dlg.querySelector('button[type="submit"]'),old=save.textContent;
+      save.disabled=true;save.textContent='Saving…';
+      try{
+        const {error}=await db.from('bookings').update({notes}).eq('id',courtTarget.id);
+        if(error)throw error;
+        dlg.close();courtTarget=null;await loadOps(true);
+      }catch(err){alert(err.message||'Could not update court.');}
+      finally{save.disabled=false;save.textContent=old;}
+    };
+    return dlg;
+  }
+  function openCourtDialog(b){
+    const dlg=ensureCourtDialog(),select=byId('v20CourtSelect'),other=byId('v20CourtOther');
+    courtTarget=b;
+    const current=courtOf(b)==='Court not decided yet'?'':courtOf(b);
+    const options=[...select.options].map(o=>o.value);
+    if(!current){select.value='';other.value='';}
+    else if(options.includes(current)){select.value=current;other.value='';}
+    else{select.value='OTHERS';other.value=current;}
+    byId('v20CourtOtherWrap').classList.toggle('hidden',select.value!=='OTHERS');
+    byId('v20CourtTitle').textContent=current?'Change Court':'Set Court';
+    byId('v20CourtBookingMeta').textContent=(b.client_name||'Player')+' • '+String(b.session_date||'')+' • '+hour(b.start_hour)+'–'+hour(b.end_hour);
+    dlg.showModal();
+  }
+
   function bindActions(list,rows){
     const map=new Map(rows.map(b=>[String(b.id),b]));
     list.querySelectorAll('[data-v20-act]').forEach(btn=>{
@@ -86,20 +140,7 @@
           if(typeof updatePayment==='function')updatePayment({...b,amount_paid:paidFor(b)});
           return;
         }
-        if(act==='court'){
-          const options=window.pickylaV20Court?.options||['NANOMOLY','DINK VALLEY','HC SANTIAGO','CASA PLAY','COURTYARD','OTHERS'];
-          const current=courtOf(b)==='Court not decided yet'?'':courtOf(b);
-          const input=prompt('Set court for this booking.\n\nOptions: '+options.join(', ')+'\n\nEnter one of the options or type another court name. Leave blank to keep undecided.',current);
-          if(input===null)return;
-          const court=String(input||'').trim();
-          const strip=window.pickylaV20Court?.stripCourtLine||((t)=>String(t||'').replace(/^Court:\\s*.+(?:\\r?\\n)?/mi,'').trim());
-          const base=strip(b.notes||'');
-          const notes=court?('Court: '+court+(base?'\n'+base:'')):base;
-          const {error}=await db.from('bookings').update({notes}).eq('id',b.id);
-          if(error)return alert(error.message);
-          await loadOps(true);
-          return;
-        }
+        if(act==='court'){openCourtDialog(b);return;}
         if(act==='status'&&typeof setV17SessionStatus==='function'){
           await setV17SessionStatus({...b,amount_paid:paidFor(b)},btn.dataset.status);
           await loadOps(true);
@@ -154,6 +195,7 @@
     }finally{state.loading=null;}
   }
   function wire(){
+    ensureCourtDialog();
     [['upcoming','v20UpcomingToggle'],['past','v20PastToggle'],['payment','v20PaymentToggle'],['completed','v20CompletedToggle']].forEach(([kind,id])=>{
       const btn=byId(id);if(btn)btn.onclick=()=>{state.expanded[kind]=!state.expanded[kind];renderAll();};
     });
