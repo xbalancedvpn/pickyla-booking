@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="public-v20-booking.css?v=20book1">
   <link rel="stylesheet" href="public-v20-hours.css?v=20hours1">
   <link rel="stylesheet" href="public-v20-pricing.css?v=20price1">
+  <link rel="stylesheet" href="public-v20-gallery.css?v=20gallery1">
   <link rel="stylesheet" href="v20-weeknav.css?v=20week1">
 
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
@@ -28,7 +29,7 @@
     <img class="brand-logo" src="pickyla-emblem-final.png" alt="Pickyla emblem">
   </a>
   <nav id="mainNav" class="main-nav">
-    <a href="#home" data-public-tab="home">Home</a><a href="#booking" data-public-tab="booking">Book</a><button id="weekPreviewNav" class="nav-week-link" type="button">Week Preview</button><a href="#rates" data-public-tab="rates">Rates</a><a href="#programs" data-public-tab="programs">Programs</a><a href="#improve" data-public-tab="improve">Find My Coaching</a><a href="#about" data-public-tab="about">Coach</a><a href="#testimonialsSection" data-public-tab="testimonialsSection">Testimonials</a><a href="#contact" data-public-tab="contact">Contact</a>
+    <a href="#home" data-public-tab="home">Home</a><a href="#booking" data-public-tab="booking">Book</a><button id="weekPreviewNav" class="nav-week-link" type="button">Week Preview</button><a href="#rates" data-public-tab="rates">Rates</a><a href="#programs" data-public-tab="programs">Programs</a><a href="#improve" data-public-tab="improve">Find My Coaching</a><a href="#about" data-public-tab="about">Coach</a><a href="#gallerySection" data-public-tab="gallerySection">Gallery</a><a href="#testimonialsSection" data-public-tab="testimonialsSection">Testimonials</a><a href="#howBooking" data-public-tab="howBooking">How It Works</a><a href="#contact" data-public-tab="contact">Contact</a>
   </nav>
   <div class="nav-actions">
     <button id="weekPreviewBtn" class="week-top-btn" type="button" aria-label="Preview this week's schedule" title="Preview this week's schedule">▦ <span>Week</span></button>
@@ -92,9 +93,26 @@
     <div class="court-fee-note"><strong>Court fee is not included in the coaching rate.</strong><span>Typical court fees range from ₱100–₱600 depending on the venue, time, peak hours, weekdays, or weekends. The final court fee is confirmed separately.</span></div>
   </section>
 
+  <section id="gallerySection" class="section v20-gallery-section hidden">
+    <div class="section-heading"><span class="eyebrow dark">PICKYLA MOMENTS</span><h2>On court with Pickyla.</h2><p>Training, drills, and player moments uploaded directly by Coach Kyla.</p></div>
+    <div class="v20-gallery-shell">
+      <div class="v20-gallery-viewport"><div id="pickylaGalleryCarousel"></div></div>
+      <div id="pickylaGalleryDots" class="v20-gallery-dots"></div>
+    </div>
+  </section>
+
   <section id="testimonialsSection" class="testimonials section">
     <div class="section-heading testimonial-heading-row"><div><span class="eyebrow dark">PLAYER STORIES</span><h2>Progress people can feel.</h2><p>Real feedback shared with permission by Pickyla clients. Want to share your experience? Send it for Kyla to review before it appears here.</p></div><button id="writeTestimonialBtn" class="btn testimonial-write-btn" type="button">Write a Testimonial</button></div>
     <div id="testimonialGrid" class="testimonial-grid"><div class="testimonial-empty">Published player stories will appear here.</div></div>
+  </section>
+
+  <section class="section booking-flow" id="howBooking">
+    <div class="section-heading"><span class="eyebrow dark">HOW BOOKING WORKS</span><h2>Simple from request to confirmation.</h2><p>Choose an available schedule, send your request, then wait for Kyla to confirm the session.</p></div>
+    <div class="v20-booking-steps">
+      <article><b>1</b><strong>Choose your schedule</strong><p>Select a date and consecutive available hours. Duration and fee are calculated automatically.</p></article>
+      <article><b>2</b><strong>Send your request</strong><p>Add Player 1, number of players, coaching type, court, and your goal. Other player details are optional.</p></article>
+      <article><b>3</b><strong>Kyla confirms</strong><p>Your selected hours become booked once the request is reviewed and confirmed by Kyla.</p></article>
+    </div>
   </section>
 
   <section class="booking section" id="booking">
@@ -193,5 +211,6 @@
 <script src="public-v20-booking.js?v=20book1"></script>
 <script src="public-v20-hours.js?v=20hours1"></script>
 <script src="public-v20-pricing.js?v=20price1"></script>
+<script src="public-v20-gallery.js?v=20gallery1"></script>
 <script src="v20-weeknav.js?v=20week1"></script>
 </body></html>
