@@ -29,5 +29,5 @@
     if(priorOpen){openV17Client=async function(id){await priorOpen(id);const c=typeof v17SelectedClient!=='undefined'?v17SelectedClient:null,actions=byId('clientDetailSection')?.querySelector('.client-detail-actions');if(!c||!actions)return;let b=byId('v17gFallbackEditClientBtn');if(!b){b=document.createElement('button');b.id='v17gFallbackEditClientBtn';b.type='button';b.className='v17g-client-edit-detail';b.textContent='Edit Client';actions.prepend(b);}b.onclick=()=>openEdit(c);};}
   }
 
-  load('admin-v17g-core.js?v=17g-maint4').then(()=>load('admin-client-maintenance.js?v=17g-maint4')).then(()=>{window.pickylaClientMaintenanceReady=true;}).catch(err=>{console.warn('Pickyla client maintenance overlay:',err);setTimeout(installEditFallback,500);});
+  load('admin-v17g-core.js?v=17g-maint5').then(()=>load('admin-client-maintenance.js?v=17g-maint5')).then(()=>{window.pickylaClientMaintenanceReady=true;}).catch(err=>{console.warn('Pickyla client maintenance overlay:',err);setTimeout(installEditFallback,500);});
 })();
