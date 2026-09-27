@@ -14,6 +14,8 @@
   <link rel="stylesheet" href="public-v20-booking.css?v=20book1">
   <link rel="stylesheet" href="public-v20-hours.css?v=20hours1">
   <link rel="stylesheet" href="public-v20-pricing.css?v=20price1">
+  <link rel="stylesheet" href="public-v20-selfrating.css?v=20self1">
+  <link rel="stylesheet" href="public-v20-multiple.css?v=20multi1">
   <link rel="stylesheet" href="public-v20-gallery.css?v=20gallery1">
   <link rel="stylesheet" href="v20-weeknav.css?v=20week1">
 
@@ -87,8 +89,9 @@
   <section class="rates section" id="rates">
     <div class="section-heading"><span class="eyebrow dark">COACHING RATES</span><h2>Train your way.</h2><p>Private coaching uses a base hourly rate plus additional-player pricing. Group drills use a per-player hourly rate. Court fee remains separate.</p></div>
     <div class="rate-grid">
-      <article class="rate-card featured"><span class="pill">PRIVATE COACHING</span><h3>1–3 Players</h3><div class="price"><span>₱</span>400</div><p>1 player / hour</p><small>+ ₱200/hour for each additional player</small></article>
-      <article class="rate-card"><span class="pill">GROUP DRILLS</span><h3>4–12 Players</h3><div class="price"><span>₱</span>250</div><p>per player / hour</p><small>Minimum 4 players • Maximum 12 players</small></article>
+      <article class="rate-card featured"><span class="pill">PRIVATE COACHING</span><h3>1-on-1</h3><div class="price">₱400</div><p>per hour</p></article>
+      <article class="rate-card"><span class="pill">PRIVATE COACHING</span><h3>Additional Player</h3><div class="price">+₱200</div><p>each additional player / hour</p></article>
+      <article class="rate-card"><span class="pill">GROUP DRILLS</span><h3>4–12 Players</h3><div class="price">₱250</div><p>per player / hour</p></article>
     </div>
     <div class="court-fee-note"><strong>Court fee is not included in the coaching rate.</strong><span>Typical court fees range from ₱100–₱600 depending on the venue, time, peak hours, weekdays, or weekends. The final court fee is confirmed separately.</span></div>
   </section>
@@ -118,6 +121,18 @@
   <section class="booking section" id="booking">
     <div class="section-heading"><span class="eyebrow dark">LIVE SCHEDULE</span><h2>Choose your date & duration.</h2><p>Pick a date, tap consecutive available hours, choose your coaching type and headcount, then send your request.</p></div>
     <div class="booking-panel">
+      <div id="v20BookingMode" class="v20-booking-mode">
+        <button type="button" data-mode="single" class="active">Single Booking</button>
+        <button type="button" data-mode="multiple">Multiple Bookings</button>
+      </div>
+      <div id="v20MultiBookingPanel" class="v20-multi-panel hidden">
+        <div class="v20-multi-head">
+          <div><strong>Multiple Bookings</strong><small>Select 2 or more dates from the calendar. Each date becomes its own session.</small></div>
+          <label><input id="v20SameHoursAll" type="checkbox" checked> Use same hours for all selected dates</label>
+        </div>
+        <div id="v20MultiSessionList" class="v20-multi-session-list"><div class="v20-multi-empty">No dates selected yet.</div></div>
+      </div>
+
       <div id="scheduleNotice" class="schedule-notice">Loading live schedule…</div>
       <div class="calendar-head"><button id="prevMonth" aria-label="Previous month">‹</button><h3 id="monthLabel"></h3><button id="nextMonth" aria-label="Next month">›</button></div>
       <div class="weekdays"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
@@ -211,6 +226,8 @@
 <script src="public-v20-booking.js?v=20book1"></script>
 <script src="public-v20-hours.js?v=20hours1"></script>
 <script src="public-v20-pricing.js?v=20price1"></script>
+<script src="public-v20-selfrating.js?v=20self1"></script>
+<script src="public-v20-multiple.js?v=20multi1"></script>
 <script src="public-v20-gallery.js?v=20gallery1"></script>
 <script src="v20-weeknav.js?v=20week1"></script>
 </body></html>
