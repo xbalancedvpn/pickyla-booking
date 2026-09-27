@@ -87,3 +87,10 @@ body.v20-modal-open{overflow:hidden}
   .v20-admin-title strong{font-size:9px}
   .v20-premium-topbar .text-btn{padding:0 7px!important}
 }
+
+.v20-earnings-chart-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.v20-earnings-chart-head h2{margin-bottom:12px}
+.v20-earnings-mode{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.v20-earnings-mode button{border:1px solid #d9d4c8;background:#fff;border-radius:999px;padding:8px 11px;font-size:9px;font-weight:900;color:#333;cursor:pointer}
+.v20-earnings-mode button.active{background:#111;color:#f5c400;border-color:#111}
+@media(max-width:640px){.v20-earnings-chart-head{display:grid}.v20-earnings-mode{justify-content:flex-start}}
