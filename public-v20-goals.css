@@ -1,0 +1,5 @@
+/* Pickyla v20 compact goals */
+#goalOptions .v20-goal-card{min-height:132px}
+.v20-goal-toggle-row{display:flex;justify-content:center;margin-top:14px}
+.v20-goal-show-all{border:1px solid #d8d2c3;background:#fff;border-radius:999px;padding:10px 18px;font-size:11px;font-weight:900;color:#222;cursor:pointer}
+.v20-goal-show-all:hover{background:#111;color:#f5c400;border-color:#111}
