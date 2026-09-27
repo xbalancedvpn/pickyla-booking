@@ -11,3 +11,14 @@
 .v20-multi-session>div:last-child{display:flex;gap:6px}.v20-multi-session button{border:0;border-radius:8px;padding:7px 8px;font-size:9px;font-weight:800;background:#efeee9;cursor:pointer}.v20-multi-session button.remove{background:#fff0ee;color:#8b3a33}
 .calendar .day.v20-multi-selected{box-shadow:inset 0 0 0 2px #f5c400;background:#fff9d7}.calendar .day.v20-multi-active{background:#111!important;color:#f5c400!important;box-shadow:inset 0 0 0 2px #f5c400}
 @media(max-width:680px){.v20-multi-head{display:grid}.v20-multi-session{align-items:flex-start}.v20-multi-session>div:last-child{flex-direction:column}}
+
+.v20-multi-court-mode{display:grid;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid #e5dfd0}
+.v20-multi-court-mode>span{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.7px;color:#6f6755}
+.v20-multi-court-mode>div{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.v20-multi-court-mode button{border:1px solid #d9d4c8;background:#fff;border-radius:10px;padding:10px 8px;font-size:9px;font-weight:900;cursor:pointer}
+.v20-multi-court-mode button.active{background:#111;color:#f5c400;border-color:#111}
+.v20-multi-court-mode small{color:#777;font-size:10px;line-height:1.45}
+.v20-session-court{display:grid;gap:5px;margin-top:7px;font-size:9px;font-weight:800;color:#5f5b50}
+.v20-session-court select,.v20-session-court input{width:100%;border:1px solid #ddd7c9;border-radius:8px;padding:8px;background:#fff;font:inherit}
+.v20-session-court-label{display:block;margin-top:5px;color:#6f6755!important;font-weight:700}
+@media(max-width:680px){.v20-multi-court-mode>div{grid-template-columns:1fr}}
