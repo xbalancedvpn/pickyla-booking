@@ -6,7 +6,7 @@
   const hour=h=>{h=Number(h);if(h===24)return '12:00 MN';return (h%12||12)+':00 '+(h<12?'AM':'PM');};
   const reasons=['Coach Unavailable','Training','Tournament','Personal Schedule','Rest Day','Other'];
   const key=r=>({'Coach Unavailable':'unavailable','Training':'training','Tournament':'tournament','Personal Schedule':'personal','Rest Day':'rest'}[r]||'other');
-  let selectedHour=null,currentRows=new Map(),mode='single',selectedHours=new Set();
+  let selectedHour=null,currentRows=new Map(),mode='single',rangeStart=null,rangeEnd=null;
 
   function reasonFromNotes(notes){
     const s=String(notes||'').trim();
@@ -22,12 +22,12 @@
     if(!host)return;
     const panel=document.createElement('section');
     panel.id='v20ScheduleBlockSection';panel.className='panel v20-block-panel';
-    panel.innerHTML='<div class="panel-head"><div><span class="eyebrow">SCHEDULE CONTROL</span><h2>Tournament / unavailable</h2><p class="panel-note">Use Single Hour for different reasons, or Multiple Hours to apply one reason to several selected hours.</p></div><span class="panel-tag muted">HOURLY</span></div>'+
+    panel.innerHTML='<div class="panel-head"><div><span class="eyebrow">SCHEDULE CONTROL</span><h2>Tournament / unavailable</h2><p class="panel-note">Use Single Hour for one block, or Multiple Hours: tap a start hour then an end hour to select the full consecutive range.</p></div><span class="panel-tag muted">HOURLY</span></div>'+
       '<label class="v20-block-date-label">Date<input id="v20BlockDate" type="date" data-date-title="Tournament / unavailable date"></label>'+
       '<div class="v20-block-mode"><button type="button" class="active" data-block-mode="single">Single Hour</button><button type="button" data-block-mode="multiple">Multiple Hours</button></div>'+
       '<div class="v20-block-legend"><span><i class="reason-unavailable"></i>Unavailable</span><span><i class="reason-training"></i>Training</span><span><i class="reason-tournament"></i>Tournament</span><span><i class="reason-personal"></i>Personal</span><span><i class="reason-rest"></i>Rest Day</span><span><i class="reason-other"></i>Other</span></div>'+
       '<div id="v20BlockSlots" class="v20-block-slots"><div class="empty">Loading hours…</div></div>'+
-      '<div id="v20BlockSelectionBar" class="v20-block-selection hidden"><span id="v20BlockSelectionCount">0 hours selected</span><div><button id="v20ClearBlockSelection" type="button" class="secondary">Clear</button><button id="v20BlockSelected" type="button" class="primary">Block Selected Hours</button></div></div>';
+      '<div id="v20BlockSelectionBar" class="v20-block-selection hidden"><span id="v20BlockSelectionCount">Tap a start hour</span><div><button id="v20ClearBlockSelection" type="button" class="secondary">Clear</button><button id="v20BlockSelected" type="button" class="primary">Block Selected Hours</button></div></div>';
     host.insertBefore(panel,old||null);
 
     const dlg=document.createElement('dialog');dlg.id='v20BlockReasonDialog';dlg.className='v20-block-dialog';
@@ -43,18 +43,19 @@
     document.body.appendChild(dlg);
 
     const date=byId('v20BlockDate');date.value=today();
-    date.onchange=()=>{selectedHours.clear();load();};
+    date.onchange=()=>{rangeStart=null;rangeEnd=null;load();};
     window.pickylaV20DatePicker?.enhance?.(date);
     panel.querySelectorAll('[data-block-mode]').forEach(btn=>btn.onclick=()=>{
       mode=btn.dataset.blockMode;
       panel.querySelectorAll('[data-block-mode]').forEach(x=>x.classList.toggle('active',x===btn));
-      selectedHours.clear();renderSelectionBar();load();
+      rangeStart=null;rangeEnd=null;renderSelectionBar();load();
     });
-    byId('v20ClearBlockSelection').onclick=()=>{selectedHours.clear();renderSelectionBar();load();};
+    byId('v20ClearBlockSelection').onclick=()=>{rangeStart=null;rangeEnd=null;renderSelectionBar();load();};
     byId('v20BlockSelected').onclick=()=>{
-      if(!selectedHours.size)return;
-      selectedHour=[...selectedHours].sort((a,b)=>a-b);
-      openReason(selectedHour);
+      const hours=rangeHours();
+      if(!hours.length)return;
+      selectedHour=hours;
+      openReason(hours);
     };
     byId('v20BlockReason').onchange=()=>byId('v20BlockOtherWrap').classList.toggle('hidden',byId('v20BlockReason').value!=='Other');
     byId('v20BlockClose').onclick=()=>dlg.close();
@@ -73,13 +74,51 @@
     byId('v20BlockOtherWrap').classList.add('hidden');byId('v20BlockPublic').checked=true;
     byId('v20BlockReasonDialog').showModal();
   }
+  function rangeHours(){
+    if(rangeStart===null)return [];
+    const a=Math.min(rangeStart,rangeEnd===null?rangeStart:rangeEnd);
+    const b=Math.max(rangeStart,rangeEnd===null?rangeStart:rangeEnd);
+    const hours=[];
+    for(let h=a;h<=b;h++){
+      const row=currentRows.get(h),status=row?.status||'available';
+      if(status!=='available')return [];
+      hours.push(h);
+    }
+    return hours;
+  }
+  function inRange(h){
+    if(rangeStart===null)return false;
+    const a=Math.min(rangeStart,rangeEnd===null?rangeStart:rangeEnd);
+    const b=Math.max(rangeStart,rangeEnd===null?rangeStart:rangeEnd);
+    return h>=a&&h<=b;
+  }
+  function chooseRangeHour(h){
+    const row=currentRows.get(h),status=row?.status||'available';
+    if(status!=='available')return;
+    if(rangeStart===null||rangeEnd!==null){
+      rangeStart=h;rangeEnd=null;
+    }else{
+      const a=Math.min(rangeStart,h),b=Math.max(rangeStart,h);
+      let valid=true;
+      for(let x=a;x<=b;x++){
+        const r=currentRows.get(x),s=r?.status||'available';
+        if(s!=='available'){valid=false;break;}
+      }
+      if(valid)rangeEnd=h;
+      else{rangeStart=h;rangeEnd=null;}
+    }
+    renderSelectionBar();load();
+  }
   function renderSelectionBar(){
     const bar=byId('v20BlockSelectionBar'),count=byId('v20BlockSelectionCount');
     if(!bar||!count)return;
-    const n=selectedHours.size;
+    const hours=rangeHours(),n=hours.length;
     bar.classList.toggle('hidden',mode!=='multiple');
-    count.textContent=n+' hour'+(n===1?'':'s')+' selected';
-    byId('v20BlockSelected').disabled=n===0;
+    if(mode!=='multiple')return;
+    if(rangeStart===null)count.textContent='Tap a start hour';
+    else if(rangeEnd===null)count.textContent='Start: '+hour(rangeStart)+' • Tap an end hour';
+    else count.textContent='Selected: '+hour(Math.min(rangeStart,rangeEnd))+'–'+hour(Math.max(rangeStart,rangeEnd)+1)+' • '+n+' hour'+(n===1?'':'s');
+    byId('v20BlockSelected').disabled=rangeStart===null||rangeEnd===null||!n;
   }
   async function reopen(row,h){
     const ok=window.confirm?confirm('Reopen '+hour(h)+'–'+hour(h+1)+'?'):true;
@@ -99,7 +138,7 @@
     try{
       const {error}=await db.from('schedule_slots').upsert(payload,{onConflict:'slot_date,start_hour'});
       if(error)throw error;
-      byId('v20BlockReasonDialog').close();selectedHour=null;selectedHours.clear();renderSelectionBar();await refreshAll();
+      byId('v20BlockReasonDialog').close();selectedHour=null;rangeStart=null;rangeEnd=null;renderSelectionBar();await refreshAll();
     }catch(err){alert(err.message||'Could not block hour.');}
     finally{btn.disabled=false;btn.textContent=old;}
   }
@@ -121,12 +160,9 @@
       if(status==='unavailable')btn.onclick=()=>reopen(row,h);
       else if(status==='available'){
         if(mode==='multiple'){
-          if(selectedHours.has(h))btn.classList.add('selected');
-          btn.onclick=()=>{
-            selectedHours.has(h)?selectedHours.delete(h):selectedHours.add(h);
-            btn.classList.toggle('selected',selectedHours.has(h));
-            renderSelectionBar();
-          };
+          if(inRange(h))btn.classList.add('selected');
+          if(rangeStart===h&&rangeEnd===null)btn.classList.add('range-start');
+          btn.onclick=()=>chooseRangeHour(h);
         }else btn.onclick=()=>openReason(h);
       }
       root.appendChild(btn);
