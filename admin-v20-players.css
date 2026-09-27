@@ -1,0 +1,4 @@
+/* PICKYLA v20 Batch 4 - compact player views */
+.v20-show-row{display:flex;justify-content:center;margin:10px 0 0}
+.v20-show-row button{min-width:145px}
+.v20-compact-hidden{display:none!important}
