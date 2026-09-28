@@ -5,7 +5,8 @@
   const FINANCE_MARKER='[FINANCE_EXCLUDE]';
   let financeRows=[];
   let confirmationContext=null;
-  let weeklyCopies={coach:null,gc:null,start:'',end:''};
+  let weeklyCopies={coach:null,player:null,start:'',end:''};
+  let weeklyPreviewMode='player';
 
   const pad=n=>String(n).padStart(2,'0');
   const ymd=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
@@ -195,7 +196,7 @@
       x.save();x.beginPath();if(x.roundRect)x.roundRect(56,24,130,130,18);else x.rect(56,24,130,130);x.clip();x.drawImage(emblem,56,24,130,130);x.restore();
     }catch(_e){}
     x.fillStyle='#fff';x.font='900 58px Arial, sans-serif';x.fillText('PICKYLA',218,78);
-    x.fillStyle='#f5c400';x.font='800 24px Arial, sans-serif';x.fillText(variant==='coach'?'COACH WEEKLY SCHEDULE':'PLAYER / GC WEEKLY SCHEDULE',220,118);
+    x.fillStyle='#f5c400';x.font='800 24px Arial, sans-serif';x.fillText(variant==='coach'?'COACH WEEKLY SCHEDULE':'PLAYER WEEKLY SCHEDULE',220,118);
     x.fillStyle='#d9d9d9';x.font='500 22px Arial, sans-serif';x.fillText(rangeText(days),220,150);
     x.textAlign='right';x.fillStyle='#fff';x.font='700 23px Arial, sans-serif';x.fillText('MONDAY → SUNDAY',W-66,76);
     x.fillStyle='#bdbdbd';x.font='500 19px Arial, sans-serif';x.fillText('8:00 AM – 12:00 Midnight',W-66,111);
@@ -246,28 +247,37 @@
     return c.toDataURL('image/png',1);
   }
 
+  function syncWeeklyPreview(mode){
+    weeklyPreviewMode=mode==='coach'?'coach':'player';
+    const src=weeklyPreviewMode==='coach'?weeklyCopies.coach:weeklyCopies.player;
+    const preview=byId('weeklyPreview');
+    if(preview&&src)preview.src=src;
+    byId('weeklyPreviewCoachBtn')?.classList.toggle('active',weeklyPreviewMode==='coach');
+    byId('weeklyPreviewPlayerBtn')?.classList.toggle('active',weeklyPreviewMode==='player');
+    const download=byId('downloadWeeklyBtn');
+    if(download)download.textContent=weeklyPreviewMode==='coach'?'↓ Download Coach Copy':'↓ Download Player Copy';
+  }
+
   function ensureWeeklyActions(){
     const actions=byId('weeklyPreviewWrap')?.querySelector('.weekly-preview-actions');
     if(!actions)return;
-    const old=byId('downloadWeeklyBtn');
-    if(old)old.textContent='Download Player / GC Copy';
-    if(!byId('downloadWeeklyCoachBtn')){
-      const coach=document.createElement('button');coach.id='downloadWeeklyCoachBtn';coach.type='button';coach.className='secondary';coach.textContent='Download Coach Copy';
-      actions.insertBefore(coach,old||actions.firstChild);
+    byId('downloadWeeklyCoachBtn')?.remove();
+    const legacyPlayer=byId('weeklyPreviewGcBtn');
+    if(legacyPlayer&&!byId('weeklyPreviewPlayerBtn')){
+      legacyPlayer.id='weeklyPreviewPlayerBtn';
+      legacyPlayer.textContent='Player';
     }
-    if(!byId('weeklyPreviewCoachBtn')){
-      const switcher=document.createElement('div');switcher.className='v20-weekly-preview-switch';
-      switcher.innerHTML='<button id="weeklyPreviewCoachBtn" type="button">Preview Coach</button><button id="weeklyPreviewGcBtn" type="button" class="active">Preview Player / GC</button>';
-      actions.prepend(switcher);
-    }
-    byId('weeklyPreviewCoachBtn').onclick=()=>{
-      if(weeklyCopies.coach){byId('weeklyPreview').src=weeklyCopies.coach;byId('weeklyPreviewCoachBtn').classList.add('active');byId('weeklyPreviewGcBtn').classList.remove('active');}
+    const coach=byId('weeklyPreviewCoachBtn');
+    const player=byId('weeklyPreviewPlayerBtn');
+    const download=byId('downloadWeeklyBtn');
+    if(coach)coach.onclick=()=>syncWeeklyPreview('coach');
+    if(player)player.onclick=()=>syncWeeklyPreview('player');
+    if(download)download.onclick=()=>{
+      const src=weeklyPreviewMode==='coach'?weeklyCopies.coach:weeklyCopies.player;
+      const type=weeklyPreviewMode==='coach'?'coach':'player';
+      downloadData(src,'pickyla-weekly-schedule-'+type+'-'+weeklyCopies.start+'-to-'+weeklyCopies.end+'.png');
     };
-    byId('weeklyPreviewGcBtn').onclick=()=>{
-      if(weeklyCopies.gc){byId('weeklyPreview').src=weeklyCopies.gc;byId('weeklyPreviewGcBtn').classList.add('active');byId('weeklyPreviewCoachBtn').classList.remove('active');}
-    };
-    byId('downloadWeeklyCoachBtn').onclick=()=>downloadData(weeklyCopies.coach,'pickyla-weekly-schedule-coach-'+weeklyCopies.start+'-to-'+weeklyCopies.end+'.png');
-    if(old)old.onclick=()=>downloadData(weeklyCopies.gc,'pickyla-weekly-schedule-player-gc-'+weeklyCopies.start+'-to-'+weeklyCopies.end+'.png');
+    syncWeeklyPreview(weeklyPreviewMode);
   }
   function downloadData(url,filename){
     if(!url)return;
@@ -282,13 +292,13 @@
       const old=btn.textContent;btn.disabled=true;btn.textContent='Generating both copies…';
       try{
         const days=weekDays(input.value||ymd(new Date())),start=ymd(days[0]),end=ymd(days[6]),rows=await fetchDetailedWeek(start,end);
-        const [coach,gc]=await Promise.all([drawWeekly(rows,days,'coach'),drawWeekly(rows,days,'gc')]);
-        weeklyCopies={coach,gc,start,end};
+        const [coach,player]=await Promise.all([drawWeekly(rows,days,'coach'),drawWeekly(rows,days,'player')]);
+        weeklyCopies={coach,player,start,end};
         const preview=byId('weeklyPreview'),wrap=byId('weeklyPreviewWrap');
-        if(preview)preview.src=gc;
+        if(preview)preview.src=player;
         if(wrap){wrap.classList.remove('hidden');wrap.scrollIntoView({behavior:'smooth',block:'nearest'});}
-        byId('weeklyPreviewGcBtn')?.classList.add('active');byId('weeklyPreviewCoachBtn')?.classList.remove('active');
-        if(typeof toast==='function')toast('Coach and Player / GC weekly copies are ready');
+        syncWeeklyPreview('player');
+        if(typeof toast==='function')toast('Coach and Player copies are ready');
       }catch(e){alert('Could not generate weekly schedule images.\n'+(e?.message||e));}
       finally{btn.disabled=false;btn.textContent=old;}
     };
