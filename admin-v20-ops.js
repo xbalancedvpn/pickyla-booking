@@ -141,23 +141,27 @@
       other.focus();
       return;
     }
-    const strip=window.pickylaV20Court?.stripCourtLine||((t)=>String(t||'').replace(/^Court:\s*.+(?:\r?\n)?/mi,'').trim());
-    const base=strip(courtTarget.notes||'');
-    const notes=court?('Court: '+court+(base?'\n'+base:'')):base;
     const save=e.submitter,old=save.textContent;
     save.disabled=true;save.textContent='Saving…';errorBox.classList.add('hidden');
     try{
-      const {data:saved,error}=await db.from('bookings').update({notes}).eq('id',courtTarget.id).select('id,notes').maybeSingle();
+      const {data:savedNotes,error}=await db.rpc('set_booking_court',{p_booking_id:courtTarget.id,p_court:court||null});
       if(error)throw error;
-      if(!saved||String(saved.notes||'')!==String(notes||''))throw new Error('Court change was not confirmed by the database.');
+      const saved=String(savedNotes||'');
+      const expected=court?String(court).trim():'';
+      const parsed=String(saved.match(/^Court:\s*(.+)$/mi)?.[1]||'').trim();
+      if(expected&&parsed.toLowerCase()!==expected.toLowerCase())throw new Error('Court change was not confirmed by the database.');
+      if(!expected&&parsed)throw new Error('Court removal was not confirmed by the database.');
 
       const local=state.rows.find(x=>String(x.id)===String(courtTarget.id));
-      if(local)local.notes=saved.notes;
+      if(local)local.notes=saved||null;
+      courtTarget.notes=saved||null;
       closeCourtModal();
       renderAll();
-      await loadOps(true);
+      if(typeof toast==='function')toast(expected?'Court updated':'Court cleared');
+      setTimeout(()=>loadOps(true),250);
     }catch(err){
-      errorBox.textContent=err.message||'Could not update court.';
+      console.error('Pickyla v20 court save failed:',err);
+      errorBox.textContent=err?.message||'Could not update court.';
       errorBox.classList.remove('hidden');
     }finally{
       save.disabled=false;save.textContent=old;
