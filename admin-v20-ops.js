@@ -7,8 +7,8 @@
   const todayKey=()=>{const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());};
   const hour=h=>{h=Number(h);if(h===24)return '12:00 MN';return (h%12||12)+':00 '+(h<12?'AM':'PM');};
   const cancelled=b=>b.status==='cancelled'||['client_cancelled','coach_cancelled'].includes(b.session_status);
-  const state={rows:[],paid:new Map(),loading:null,expanded:{upcoming:false,past:false,payment:false,completed:false}};
-  const limits={upcoming:3,past:3,payment:3,completed:3};
+  const state={rows:[],paid:new Map(),loading:null,expanded:{upcoming:false,past:false,payment:false,completed:false,cancelled:false}};
+  const limits={upcoming:3,past:3,payment:3,completed:3,cancelled:3};
 
   function adminActive(){const v=byId('adminView');return !!v&&!v.classList.contains('hidden');}
   function paidFor(b){return Number(state.paid.get(String(b.id)) ?? b.amount_paid ?? 0);}
@@ -36,26 +36,33 @@
       .sort((a,b)=>String(b.session_closed_at||b.session_date).localeCompare(String(a.session_closed_at||a.session_date)));
     const settled=completed.filter(b=>paymentInfo(b).balance<=0.001)
       .sort((a,b)=>String(b.session_closed_at||b.session_date).localeCompare(String(a.session_closed_at||a.session_date)));
-    return {upcoming,past,payment,completed:settled};
+    const cancelledRows=state.rows.filter(cancelled)
+      .sort((a,b)=>String(b.session_closed_at||b.session_date).localeCompare(String(a.session_closed_at||a.session_date))||Number(b.start_hour)-Number(a.start_hour));
+    return {upcoming,past,payment,completed:settled,cancelled:cancelledRows};
   }
   function emptyText(kind){
     return {
       upcoming:'No upcoming confirmed bookings.',
       past:'No past sessions need completion.',
       payment:'No completed sessions need payment follow-up.',
-      completed:'No fully settled completed sessions yet.'
+      completed:'No fully settled completed sessions yet.',
+      cancelled:'No cancelled bookings yet.'
     }[kind];
   }
   function cardHtml(b,kind){
     const p=paymentInfo(b);
     const date=new Date(String(b.session_date)+'T12:00:00').toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'});
     const court=courtOf(b);
-    const stateLabel=kind==='past'?'Needs Closing':kind==='payment'?'Completed • Balance Due':kind==='completed'?'Completed':'Scheduled';
+    const stateLabel=kind==='past'?'Needs Closing':kind==='payment'?'Completed • Balance Due':kind==='completed'?'Completed':kind==='cancelled'?(b.session_status==='client_cancelled'?'Player Cancelled':b.session_status==='coach_cancelled'?'Coach Cancelled':'Cancelled'):'Scheduled';
     let actions='';
     if(b.client_id)actions+='<button type="button" data-v20-act="profile" data-id="'+esc(b.id)+'">Player Profile</button>';
     actions+='<button type="button" data-v20-act="card" data-id="'+esc(b.id)+'">Confirmation Card</button>';
     if(kind==='upcoming')actions+='<button type="button" data-v20-act="court" data-id="'+esc(b.id)+'">'+(court==='Court not decided yet'?'Set Court':'Change Court')+'</button>';
     if(p.balance>0.001&&!b.client_program_id)actions+='<button type="button" class="primary" data-v20-act="pay" data-id="'+esc(b.id)+'">'+(kind==='payment'?'Record Remaining Payment':'Record Payment')+'</button>';
+    if(kind==='completed'||kind==='payment'){
+      const excluded=String(b.session_outcome_note||'').includes('[FINANCE_EXCLUDE]');
+      actions+='<button type="button" class="v20-finance-exclude '+(excluded?'active':'')+'" data-v20-act="finance" data-id="'+esc(b.id)+'">'+(excluded?'Include in Income':'Exclude from Income')+'</button>';
+    }
     if(kind==='upcoming'||kind==='past'){
       actions+='<button type="button" class="v20-complete" data-v20-act="status" data-status="completed" data-id="'+esc(b.id)+'">Mark Completed</button>';
       if(kind==='past')actions+='<button type="button" data-v20-act="status" data-status="no_show" data-id="'+esc(b.id)+'">No Show</button>';
@@ -186,9 +193,24 @@
           if(typeof updatePayment==='function')updatePayment({...b,amount_paid:paidFor(b)});
           return;
         }
+        if(act==='finance'){
+          const marker='[FINANCE_EXCLUDE]';
+          const current=String(b.session_outcome_note||'');
+          const excluded=current.includes(marker);
+          const clean=current.replace(/\s*\[FINANCE_EXCLUDE\]\s*/g,' ').trim();
+          const next=excluded?(clean||null):((clean?clean+'\n':'')+marker);
+          const {error}=await db.from('bookings').update({session_outcome_note:next}).eq('id',b.id);
+          if(error)return alert('Could not update income status.\n'+error.message);
+          b.session_outcome_note=next;
+          renderAll();
+          if(typeof loadReports==='function')await loadReports();
+          if(typeof toast==='function')toast(excluded?'Included in income again':'Excluded from income');
+          return;
+        }
         if(act==='status'&&typeof setV17SessionStatus==='function'){
           await setV17SessionStatus({...b,amount_paid:paidFor(b)},btn.dataset.status);
           await loadOps(true);
+          if(typeof loadReports==='function')await loadReports();
         }
       };
     });
@@ -211,6 +233,7 @@
     renderList('past',b.past,'v20PastList','v20PastCount','v20PastToggle');
     renderList('payment',b.payment,'v20PaymentList','v20PaymentCount','v20PaymentToggle');
     renderList('completed',b.completed,'v20CompletedList','v20CompletedCount','v20CompletedToggle');
+    renderList('cancelled',b.cancelled,'v20CancelledList','v20CancelledCount','v20CancelledToggle');
   }
   async function loadOps(force=false){
     if(!adminActive())return;
@@ -234,7 +257,7 @@
     try{return await state.loading;}
     catch(e){
       console.error('Pickyla v20 operations load failed:',e);
-      ['v20UpcomingList','v20PastList','v20PaymentList','v20CompletedList'].forEach(id=>{
+      ['v20UpcomingList','v20PastList','v20PaymentList','v20CompletedList','v20CancelledList'].forEach(id=>{
         const el=byId(id);if(el)el.innerHTML='<div class="empty">'+esc(e.message||'Could not load operations data.')+'</div>';
       });
     }finally{state.loading=null;}
@@ -256,7 +279,7 @@
       }
       if(b)openCourtModal(b);
     },true);
-    [['upcoming','v20UpcomingToggle','v20UpcomingSection'],['past','v20PastToggle','v20PastSection'],['payment','v20PaymentToggle','v20PaymentSection'],['completed','v20CompletedToggle','v20CompletedSection']].forEach(([kind,id,sectionId])=>{
+    [['upcoming','v20UpcomingToggle','v20UpcomingSection'],['past','v20PastToggle','v20PastSection'],['payment','v20PaymentToggle','v20PaymentSection'],['completed','v20CompletedToggle','v20CompletedSection'],['cancelled','v20CancelledToggle','v20CancelledSection']].forEach(([kind,id,sectionId])=>{
       const btn=byId(id);if(btn)btn.onclick=()=>{
         state.expanded[kind]=!state.expanded[kind];
         renderAll();
