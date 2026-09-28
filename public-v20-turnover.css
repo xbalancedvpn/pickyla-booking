@@ -1,0 +1,13 @@
+/* PICKYLA v20 turnover public polish */
+.brand{gap:9px!important}
+.v20-public-title{display:grid;gap:2px;line-height:1;white-space:nowrap}
+.v20-public-title strong{font:900 11px/1 Manrope,sans-serif;letter-spacing:.9px;color:#f5c400}
+.v20-public-title small{font:800 6px/1.2 Manrope,sans-serif;letter-spacing:1.35px;text-transform:uppercase;color:#f0f0ed}
+.price{font-family:"Cormorant Garamond",Georgia,serif!important;font-weight:700!important;letter-spacing:-1.5px!important;font-size:54px!important}
+.price span{font-family:"Cormorant Garamond",Georgia,serif!important}
+@media(max-width:1050px){.v20-public-title small{display:none}.v20-public-title strong{font-size:9px}}
+@media(max-width:700px){
+  .v20-public-title{gap:1px}.v20-public-title strong{font-size:8px;letter-spacing:.45px}
+  .price{font-size:50px!important}
+}
+@media(max-width:390px){.v20-public-title{display:none}}
