@@ -390,10 +390,166 @@ function v17dSetBookingParticipants(rows,count=null){const normalized=(rows||[])
 if($("participantCount"))$("participantCount").onchange=()=>{const n=Number($("participantCount").value);v17dRenderAdminParticipants(n);updateRate();};
 v17dRenderAdminParticipants(Number($("participantCount")?.value||1));
 
-async function v17dResolveClient(p,allowNamePrompt=true){const first=v17dTitle(p.first_name),last=v17dTitle(p.last_name),full=v17dFull({first_name:first,last_name:last}),name_key=v17dNameKey(first,last),contact=v17dClean(p.contact)||null,contact_key=v17ContactKey(contact);if(!first||!last)throw new Error("Every player needs a first name and last name.");
-  if(contact_key){const {data,error}=await db.from("clients").select("*").eq("contact_key",contact_key).eq("name_key",name_key);if(error)throw error;if((data||[]).length===1){const c=data[0],updates={};if(!c.first_name)updates.first_name=first;if(!c.last_name)updates.last_name=last;if(c.contact!==contact)updates.contact=contact;if(!c.name_key)updates.name_key=name_key;if(Object.keys(updates).length)await db.from("clients").update(updates).eq("id",c.id);return{...c,...updates};}}
-  const {data:matches,error:me}=await db.from("clients").select("*").eq("name_key",name_key).eq("is_active",true);if(me)throw me;if(allowNamePrompt&&(matches||[]).length===1){const m=matches[0];if(confirm(`Possible repeat client found:\n\n${m.full_name}${m.contact?`\n${m.contact}`:""}\n\nLink this player to the existing client profile?`))return m;}
-  const {data,error}=await db.from("clients").insert({first_name:first,last_name:last,full_name:full,name_key,contact,contact_key}).select().single();if(error){if(error.code==="23505"){const {data:again}=await db.from("clients").select("*").eq("name_key",name_key).eq("contact_key",contact_key).maybeSingle();if(again)return again;}throw error;}return data;}
+function v20IdentityKey(v){
+  return v17dClean(String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' '));
+}
+function v20EditDistance(a,b){
+  a=String(a||'');b=String(b||'');if(a===b)return 0;if(!a.length)return b.length;if(!b.length)return a.length;
+  let prev=Array.from({length:b.length+1},(_,i)=>i);
+  for(let i=1;i<=a.length;i++){
+    const cur=[i];
+    for(let j=1;j<=b.length;j++)cur[j]=Math.min(cur[j-1]+1,prev[j]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1));
+    prev=cur;
+  }
+  return prev[b.length];
+}
+function v20TextSimilarity(a,b){
+  a=v20IdentityKey(a);b=v20IdentityKey(b);if(!a&&!b)return 1;if(!a||!b)return 0;
+  return 1-(v20EditDistance(a,b)/Math.max(a.length,b.length,1));
+}
+function v20NameSimilarity(a,b){
+  const ak=v20IdentityKey(a),bk=v20IdentityKey(b);if(!ak||!bk)return 0;if(ak===bk)return 1;
+  const at=ak.split(' ').filter(Boolean),bt=bk.split(' ').filter(Boolean);
+  const best=(src,dst)=>src.length?src.reduce((sum,t)=>sum+Math.max(...dst.map(x=>v20TextSimilarity(t,x)),0),0)/src.length:0;
+  const token=(best(at,bt)+best(bt,at))/2;
+  const last=v20TextSimilarity(at.at(-1)||'',bt.at(-1)||'');
+  const first=v20TextSimilarity(at[0]||'',bt[0]||'');
+  return Math.min(1,(v20TextSimilarity(ak,bk)*0.48)+(token*0.28)+(last*0.18)+(first*0.06));
+}
+function v20MaskContact(v){
+  const s=String(v||'').trim();if(!s)return 'No contact saved';
+  const digits=s.replace(/\D/g,'');if(digits.length<7)return s;
+  return '••••••'+digits.slice(-4);
+}
+async function v20IdentityPool(){
+  const [{data:clients,error:ce},{data:aliases,error:ae}]=await Promise.all([
+    db.from('clients').select('*').eq('is_active',true).order('full_name'),
+    db.from('client_aliases').select('client_id,alias_name,alias_key')
+  ]);
+  if(ce)throw ce;if(ae)throw ae;
+  const byClient=new Map();
+  (aliases||[]).forEach(a=>{const list=byClient.get(a.client_id)||[];list.push(a);byClient.set(a.client_id,list);});
+  return{clients:clients||[],aliases:aliases||[],byClient};
+}
+function v20IdentityCandidates(p,pool){
+  const submitted=v17dFull(p),key=v20IdentityKey(submitted),contactKey=v17ContactKey(p.contact),rows=[];
+  for(const client of pool.clients){
+    const aliases=pool.byClient.get(client.id)||[];
+    const canonicalKey=v20IdentityKey(client.full_name);
+    const exactContact=!!(contactKey&&client.contact_key&&contactKey===client.contact_key);
+    const exactName=key&&key===canonicalKey;
+    const exactAlias=aliases.find(a=>key&&key===String(a.alias_key||''));
+    let bestAlias=null,bestAliasScore=0;
+    aliases.forEach(a=>{const s=v20NameSimilarity(submitted,a.alias_name);if(s>bestAliasScore){bestAliasScore=s;bestAlias=a;}});
+    const canonicalScore=v20NameSimilarity(submitted,client.full_name);
+    let score=Math.max(canonicalScore,bestAliasScore),reason='Similar name';
+    if(exactContact){score=1.08;reason='Same contact';}
+    else if(exactName){score=1.06;reason='Exact name';}
+    else if(exactAlias){score=1.04;reason='Known alias';}
+    const submittedLast=v20IdentityKey(p.last_name).split(' ').at(-1)||'';
+    const clientLast=v20IdentityKey(client.last_name||client.full_name).split(' ').at(-1)||'';
+    if(reason==='Similar name'&&submittedLast&&clientLast&&submittedLast===clientLast)score=Math.min(1,score+0.05);
+    if(score>=0.74)rows.push({client,score,reason,matchedAlias:exactAlias?.alias_name||bestAlias?.alias_name||null});
+  }
+  return rows.sort((a,b)=>b.score-a.score||String(a.client.full_name).localeCompare(String(b.client.full_name))).slice(0,4);
+}
+function v20EnsureIdentityDialog(){
+  let d=$('v20IdentityDialog');if(d)return d;
+  d=document.createElement('dialog');d.id='v20IdentityDialog';d.className='v20-identity-dialog';
+  d.innerHTML=`<form id="v20IdentityForm" class="v20-identity-form">
+    <div class="v20-identity-head"><div><span class="eyebrow">PLAYER IDENTITY CHECK</span><h2 id="v20IdentityTitle">Verify Player</h2><p id="v20IdentitySubmitted"></p></div><button type="button" id="v20IdentityClose" class="close-btn">×</button></div>
+    <div id="v20IdentityNotice" class="v20-identity-notice"></div>
+    <div id="v20IdentityOptions" class="v20-identity-options"></div>
+    <div class="v20-identity-actions"><button type="button" id="v20IdentityCancel" class="secondary">Back</button><button type="submit" class="primary">Continue</button></div>
+  </form>`;
+  document.body.appendChild(d);return d;
+}
+function v20ChooseIdentity(p,candidates,index,total){
+  return new Promise(resolve=>{
+    const d=v20EnsureIdentityDialog(),form=$('v20IdentityForm'),options=$('v20IdentityOptions'),submitted=v17dFull(p);
+    $('v20IdentityTitle').textContent=`Verify Player ${index+1} of ${total}`;
+    $('v20IdentitySubmitted').textContent=`Submitted: ${submitted}${p.contact?' • '+p.contact:''}`;
+    $('v20IdentityNotice').innerHTML=candidates.length
+      ? '<strong>Possible existing profile found.</strong> Choose the correct person or create a separate profile. Pickyla will never merge a fuzzy name automatically.'
+      : '<strong>No similar active profile found.</strong> A new player profile will be created after you confirm the booking.';
+    options.innerHTML='';
+    const strong=candidates[0]&&candidates[0].reason!=='Similar name';
+    candidates.forEach((m,i)=>{
+      const label=document.createElement('label');label.className='v20-identity-option';
+      label.innerHTML=`<input type="radio" name="v20IdentityChoice" value="${v17Escape(m.client.id)}" ${strong&&i===0?'checked':''} required>
+        <span><strong>${v17Escape(m.client.full_name)}</strong><small>${v17Escape(m.reason)} • ${v17Escape(v20MaskContact(m.client.contact))}${m.matchedAlias&&m.reason!=='Known alias'?' • Similar to alias: '+v17Escape(m.matchedAlias):''}</small></span>
+        <b>Use Existing</b>`;
+      options.appendChild(label);
+    });
+    const fresh=document.createElement('label');fresh.className='v20-identity-option v20-identity-new';
+    fresh.innerHTML=`<input type="radio" name="v20IdentityChoice" value="__new__" ${!candidates.length?'checked':''} required>
+      <span><strong>Create new player profile</strong><small>Keep “${v17Escape(submitted)}” as a separate person.</small></span><b>New</b>`;
+    options.appendChild(fresh);
+    let finished=false;
+    const done=value=>{if(finished)return;finished=true;form.onsubmit=null;$('v20IdentityClose').onclick=null;$('v20IdentityCancel').onclick=null;try{d.close();}catch{}resolve(value);};
+    $('v20IdentityClose').onclick=()=>done(null);$('v20IdentityCancel').onclick=()=>done(null);
+    form.onsubmit=e=>{e.preventDefault();const val=new FormData(form).get('v20IdentityChoice');if(!val)return;done(val==='__new__'?{mode:'new',input:p}:{mode:'existing',input:p,client:candidates.find(x=>String(x.client.id)===String(val))?.client});};
+    d.showModal();
+  });
+}
+async function v20ReviewParticipantIdentities(entered,ctx){
+  const pool=await v20IdentityPool(),out=[];
+  for(let i=0;i<entered.length;i++){
+    const p={first_name:v17dTitle(entered[i].first_name),last_name:v17dTitle(entered[i].last_name),contact:v17dClean(entered[i].contact)||null};
+    if(ctx&&i===0){out.push({mode:'existing',input:p,client:ctx.client,reason:'Program client'});continue;}
+    const candidates=v20IdentityCandidates(p,pool);
+    if(candidates.length){
+      const choice=await v20ChooseIdentity(p,candidates,i,entered.length);if(!choice)return null;
+      out.push(choice);
+    }else out.push({mode:'new',input:p});
+  }
+  for(let i=0;i<out.length;i++)for(let j=i+1;j<out.length;j++){
+    const a=out[i],b=out[j],ak=v20IdentityKey(v17dFull(a.input)),bk=v20IdentityKey(v17dFull(b.input)),ac=v17ContactKey(a.input.contact),bc=v17ContactKey(b.input.contact);
+    if(a.mode==='existing'&&b.mode==='existing'&&String(a.client.id)===String(b.client.id))throw new Error(`Player ${i+1} and Player ${j+1} point to the same existing profile. Edit the roster before confirming.`);
+    if((ac&&bc&&ac===bc)||(ak&&bk&&ak===bk))throw new Error(`Player ${i+1} and Player ${j+1} appear to be the same person. Edit the roster before confirming.`);
+    const sameLast=v20IdentityKey(a.input.last_name)===v20IdentityKey(b.input.last_name);
+    if(sameLast&&v20NameSimilarity(v17dFull(a.input),v17dFull(b.input))>=0.9){
+      if(!confirm(`Player ${i+1} (${v17dFull(a.input)}) and Player ${j+1} (${v17dFull(b.input)}) look very similar.\n\nContinue only if they are two different people.`))return null;
+    }
+  }
+  return out;
+}
+function v20IdentitySummary(decision,index){
+  const submitted=v17dFull(decision.input);
+  if(decision.mode==='existing'){
+    const canonical=decision.client.full_name||submitted;
+    return v20IdentityKey(submitted)===v20IdentityKey(canonical)
+      ? `Player ${index+1}: ${canonical} • Existing profile`
+      : `Player ${index+1}: ${submitted} → ${canonical} • Existing profile`;
+  }
+  return `Player ${index+1}: ${submitted} • New profile`;
+}
+async function v20MaterializeParticipantIdentities(decisions){
+  const linked=[];
+  for(const d of decisions){
+    const p=d.input,first=v17dTitle(p.first_name),last=v17dTitle(p.last_name),full=v17dFull({first_name:first,last_name:last}),name_key=v17dNameKey(first,last),contact=v17dClean(p.contact)||null,contact_key=v17ContactKey(contact);
+    let client=d.client;
+    if(d.mode==='new'){
+      const {data,error}=await db.from('clients').insert({first_name:first,last_name:last,full_name:full,name_key,contact,contact_key}).select().single();
+      if(error)throw error;client=data;
+    }else{
+      const updates={};
+      if(!client.first_name)updates.first_name=first;if(!client.last_name)updates.last_name=last;if(!client.name_key)updates.name_key=v17dNameKey(client.first_name||first,client.last_name||last);
+      if(!client.contact&&contact){updates.contact=contact;updates.contact_key=contact_key;}
+      if(Object.keys(updates).length){const {data,error}=await db.from('clients').update(updates).eq('id',client.id).select().single();if(error)throw error;client=data;}
+      if(v20IdentityKey(full)!==v20IdentityKey(client.full_name)){
+        const alias={client_id:client.id,alias_name:full,alias_key:v20IdentityKey(full)};
+        const {error}=await db.from('client_aliases').upsert(alias,{onConflict:'client_id,alias_key',ignoreDuplicates:true});if(error)throw error;
+      }
+    }
+    linked.push({...p,client,first_name:client.first_name||first,last_name:client.last_name||last,full_name:client.full_name||full,contact:client.contact||contact||null});
+  }
+  return linked;
+}
+async function v17dResolveClient(p){
+  const decisions=await v20ReviewParticipantIdentities([p],null);if(!decisions)return null;
+  return (await v20MaterializeParticipantIdentities(decisions))[0]?.client||null;
+}
 
 fetchBookings=async function(d){const {data,error}=await db.from("bookings").select("*,booking_participants(id,client_id,participant_order,first_name,last_name,full_name,contact,is_primary)").eq("session_date",d).neq("status","cancelled").order("start_hour");if(error)throw error;return data||[];};
 renderBookingGroups=function(){bookingGroups.innerHTML="";if(!bookingsForDay.length){bookingGroups.innerHTML='<div class="empty">No grouped bookings on this date.</div>';return;}bookingsForDay.forEach(b=>{const p=paymentState(b),card=document.createElement("article");card.className="booking-card";const session=b.session_status||"scheduled",roster=(b.booking_participants||[]).sort((a,z)=>a.participant_order-z.participant_order),badge=p.status==="full"?"Paid":p.status==="partial"?"Partial":"Unpaid";const rosterHtml=roster.length?`<div class="booking-roster">${roster.map((x,i)=>`<span class="${i===0?"primary":""}">${i===0?"Primary • ":""}${v17Escape(x.full_name||v17dFull(x))}</span>`).join("")}</div>`:"";card.innerHTML=`<div class="booking-card-top"><div><h4>${v17Escape(b.client_name)} <span class="status-pill-v17 ${v17StatusClass(session)}">${v17SessionLabel(session)}</span></h4><div class="meta">${hourName(Number(b.start_hour))}–${hourName(Number(b.end_hour))} • ${b.participant_count} player(s) • ${v17Escape(b.coaching_type||"")}<br>${b.client_program_id?"Package session":`Hourly coaching rate: ${peso(b.hourly_coaching_rate??b.rate_per_person)}/hr`}${b.contact?` • ${v17Escape(b.contact)}`:""}</div>${rosterHtml}${b.client_program_id?`<span class="program-line">PROGRAM • Session ${b.program_session_number||"—"}</span>`:""}</div><div class="money">${peso(p.total)}<small>${badge} • Collected ${peso(p.paid)} • Balance ${peso(p.balance)}</small></div></div><div class="booking-actions"><button class="pay-btn" data-act="pay">Record Payment</button><button class="confirm-card-btn" data-act="card">Confirmation Card</button>${b.client_id?'<button class="profile-btn" data-act="profile">Client Profile</button>':''}</div><div class="session-status-actions"></div>`;card.querySelector('[data-act="pay"]').disabled=p.balance<=0;card.querySelector('[data-act="pay"]').onclick=()=>updatePayment(b);card.querySelector('[data-act="card"]').onclick=()=>openConfirmationCard(b);const prof=card.querySelector('[data-act="profile"]');if(prof)prof.onclick=()=>openV17Client(b.client_id);const actions=card.querySelector(".session-status-actions");if(session==="scheduled")[["Completed","complete","completed"],["No Show","noshow","no_show"],["Client Cancelled","clientcancel","client_cancelled"],["Coach Cancelled","coachcancel","coach_cancelled"]].forEach(([txt,cls,st])=>{const bt=document.createElement("button");bt.type="button";bt.className=cls;bt.textContent=txt;bt.onclick=()=>setV17SessionStatus(b,st);actions.appendChild(bt);});bookingGroups.appendChild(card);});};
@@ -402,10 +558,52 @@ async function v17dLoadInquiryToBooking(i){if(!i.preferred_date)return alert("Th
 loadInquiries=async function(){const filter=$("inquiryFilter").value;let q=db.from("inquiries").select("*,inquiry_participants(id,participant_order,first_name,last_name,full_name,contact,is_primary)").order("created_at",{ascending:false});if(filter==="active")q=q.in("status",["new","waiting","tentative"]);else if(filter!=="all")q=q.eq("status",filter);const {data,error}=await q,list=$("inquiryList");if(error){list.innerHTML=`<div class="empty">${v17Escape(error.message)}</div>`;return;}const rows=data||[];$("pendingCount").textContent=rows.filter(x=>["new","waiting","tentative"].includes(x.status)).length;list.innerHTML="";if(!rows.length){list.innerHTML='<div class="empty">No inquiries in this view.</div>';return;}rows.forEach(i=>{const roster=(i.inquiry_participants||[]).sort((a,b)=>a.participant_order-b.participant_order),card=document.createElement("article");card.className="inquiry-card";const rosterHtml=roster.length?`<div class="inquiry-roster">${roster.map((x,n)=>`<span class="${n===0?"primary":""}">${n===0?"Primary • ":""}${v17Escape(x.full_name||v17dFull(x))}</span>`).join("")}</div>`:"";card.innerHTML=`<div class="inquiry-top"><div><h4>${v17Escape(i.client_name)}</h4><div class="inquiry-meta">${i.preferred_date||"No date"}${i.start_hour!=null?` • ${hourName(i.start_hour)}–${hourName(i.end_hour)}`:""} • ${i.participant_count||"?"} player(s)${i.contact?`<br>${v17Escape(i.contact)}`:""}${rosterHtml}${i.goal_focus?`<strong>Goal:</strong> ${v17Escape(i.goal_focus)}<br>`:""}${i.program_interest?`<strong>Program:</strong> ${v17Escape(i.program_interest)}`:""}</div></div><span class="status-pill">${i.status}</span></div><div class="inquiry-actions"><button class="load-btn" type="button">Load to Booking</button><select class="status-select"><option value="new">New</option><option value="waiting">Waiting</option><option value="tentative">Tentative</option><option value="confirmed">Confirmed</option><option value="cancelled">Cancelled</option></select><button class="delete-inquiry" type="button">Delete</button></div>`;card.querySelector(".status-select").value=i.status;card.querySelector(".status-select").onchange=async e=>{await db.from("inquiries").update({status:e.target.value}).eq("id",i.id);toast("Inquiry updated");loadInquiries();};card.querySelector(".delete-inquiry").onclick=async()=>{if(!confirm("Delete this inquiry?"))return;await db.from("inquiries").delete().eq("id",i.id);loadInquiries();};card.querySelector(".load-btn").onclick=()=>v17dLoadInquiryToBooking(i);list.appendChild(card);});};
 if($("inquiryFilter"))$("inquiryFilter").onchange=loadInquiries;
 
-$("quickBookingForm").onsubmit=async e=>{e.preventDefault();const d=$("bookingDate").value,s=Number($("bookingStart").value),en=Number($("bookingEnd").value),n=Number($("participantCount").value),enteredAll=v17dCurrentAdminParticipants();if(!enteredAll[0]?.first_name||!enteredAll[0]?.last_name)return alert("Player 1 first name and last name are required.");const invalidExtra=enteredAll.slice(1).find(p=>(p.first_name||p.last_name||p.contact)&&(!p.first_name||!p.last_name));if(invalidExtra)return alert("For optional additional players, enter both first and last name or leave the row blank.");const entered=enteredAll.filter((p,i)=>i===0||p.first_name||p.last_name||p.contact);if(!d||!s||!en||en<=s)return alert("Choose a valid date/time range.");const bad=await conflictsFor(d,s,en);if(bad.length)return alert("Schedule conflict:\n"+bad.join("\n"));const ctx=v17BookingProgramContext;let r=Number($("ratePerPerson").value||0),initial=Number($("amountPaid").value||0),total=(en-s)*r;if(ctx){r=0;initial=0;total=0;}else if(initial>total)return alert("Initial payment cannot be higher than the booking total.");
-  let linked=[];try{for(let i=0;i<entered.length;i++){const c=(ctx&&i===0)?ctx.client:await v17dResolveClient(entered[i],true);linked.push({...entered[i],client:c,first_name:c.first_name||entered[i].first_name,last_name:c.last_name||entered[i].last_name,full_name:c.full_name||v17dFull(entered[i]),contact:c.contact||entered[i].contact||null});}}catch(err){return alert(`Could not link player profiles.\n\n${err.message}`);}const primary=linked[0],clientId=ctx?.client?.id||primary.client.id;const unnamedCount=Math.max(0,n-linked.length),summary=`Confirm booking?\n\n${linked.map((p,i)=>`Player ${i+1}: ${p.full_name}`).join("\n")}${unnamedCount?`\nAdditional player details not provided: ${unnamedCount}`:""}\n\n${d} • ${hourName(s)}–${hourName(en)}\n${n} player(s)${ctx?`\n${ctx.program.name} • Session ${ctx.sessionNumber}/${ctx.program.session_count}\nFixed package — no separate hourly charge`:` • ${peso(r)}/person/hr\nTotal: ${peso(total)}${initial?`\nInitial payment: ${peso(initial)}`:""}`}`;if(!confirm(summary))return;
-  const book={session_date:d,start_hour:s,end_hour:en,client_name:primary.full_name,contact:primary.contact,participant_count:n,coaching_type:ctx?ctx.program.name:(window.pickylaV20AdminPricing?.coachingType?.()||coachingType(n)),rate_mode:ctx?"custom":$("rateMode").value,rate_per_person:r,total_amount:total,amount_paid:0,notes:$("bookingNotes").value.trim()||null,status:"confirmed",client_id:clientId,client_program_id:ctx?.enrollment?.id||null,program_session_number:ctx?.sessionNumber||null,session_status:"scheduled",booking_group_id:v20LoadedInquiryGroup?.id||null,booking_kind:v20LoadedInquiryGroup?"multiple":"single",booking_group_size:v20LoadedInquiryGroup?.size||null};const {data:b,error:e1}=await db.from("bookings").insert(book).select().single();if(e1)return alert(e1.message);
-  const participantRows=linked.map((p,i)=>({booking_id:b.id,client_id:p.client.id,participant_order:i+1,first_name:p.first_name,last_name:p.last_name,full_name:p.full_name,contact:p.contact,contact_key:v17ContactKey(p.contact),is_primary:i===0}));const {error:pe}=await db.from("booking_participants").insert(participantRows);if(pe){await db.from("bookings").delete().eq("id",b.id);return alert(`Players could not be saved.\n\n${pe.message}`);}const slotRows=[];for(let h=s;h<en;h++)slotRows.push({slot_date:d,start_hour:h,status:"booked",client_name:book.client_name,contact:book.contact,coaching_type:book.coaching_type,rate:r,notes:book.notes,booking_id:b.id});const {error:e2}=await db.from("schedule_slots").insert(slotRows);if(e2){await db.from("bookings").delete().eq("id",b.id);return alert(e2.message);}if(initial>0){const {error:payErr}=await db.from("booking_payments").insert({booking_id:b.id,amount:initial,paid_at:todayStr(),payment_method:"Cash",note:"Initial payment recorded when booking was created",source:"booking_create"});if(payErr){await db.from("schedule_slots").delete().eq("booking_id",b.id);await db.from("bookings").delete().eq("id",b.id);return alert(payErr.message);}}if(v17dLoadedInquiryId){await db.from("inquiries").update({status:"confirmed"}).eq("id",v17dLoadedInquiryId);v17dLoadedInquiryId=null;v17dLoadedInquiryParticipants=[];v20LoadedInquiryGroup=null;}toast(ctx?"Program session scheduled":"Booking saved");adminDate.value=d;$("bookingNotes").value="";$("amountPaid").value="0";v17BookingProgramContext=null;$("participantCount").value="1";v17dRenderAdminParticipants(1,[]);$("rateMode").value="standard";updateRate();await Promise.all([loadDay(),loadBookingAvailability(),loadReports(),loadAdminCalendar(),loadInquiries(),loadCollectionAlerts(),loadTodayCommandCenter(),loadPaymentDashboard(),loadV17Clients()]);if(clientId&&v17SelectedClient?.id===clientId)await openV17Client(clientId);};
+$("quickBookingForm").onsubmit=async e=>{
+  e.preventDefault();
+  const d=$("bookingDate").value,s=Number($("bookingStart").value),en=Number($("bookingEnd").value),n=Number($("participantCount").value),enteredAll=v17dCurrentAdminParticipants();
+  if(!enteredAll[0]?.first_name||!enteredAll[0]?.last_name)return alert("Player 1 first name and last name are required.");
+  const invalidExtra=enteredAll.slice(1).find(p=>(p.first_name||p.last_name||p.contact)&&(!p.first_name||!p.last_name));
+  if(invalidExtra)return alert("For optional additional players, enter both first and last name or leave the row blank.");
+  const entered=enteredAll.filter((p,i)=>i===0||p.first_name||p.last_name||p.contact);
+  if(!d||!s||!en||en<=s)return alert("Choose a valid date/time range.");
+  const bad=await conflictsFor(d,s,en);if(bad.length)return alert("Schedule conflict:\n"+bad.join("\n"));
+  const ctx=v17BookingProgramContext;let r=Number($("ratePerPerson").value||0),initial=Number($("amountPaid").value||0),total=(en-s)*r;
+  if(ctx){r=0;initial=0;total=0;}else if(initial>total)return alert("Initial payment cannot be higher than the booking total.");
+
+  let decisions;
+  try{decisions=await v20ReviewParticipantIdentities(entered,ctx);}
+  catch(err){return alert(`Could not review player identities.\n\n${err.message||err}`);}
+  if(!decisions)return;
+
+  const unnamedCount=Math.max(0,n-decisions.length);
+  const summary=`Confirm booking?\n\n${decisions.map(v20IdentitySummary).join("\n")}${unnamedCount?`\nAdditional player details not provided: ${unnamedCount}`:""}\n\n${d} • ${hourName(s)}–${hourName(en)}\n${n} player(s)${ctx?`\n${ctx.program.name} • Session ${ctx.sessionNumber}/${ctx.program.session_count}\nFixed package — no separate hourly charge`:` • ${peso(r)}/person/hr\nTotal: ${peso(total)}${initial?`\nInitial payment: ${peso(initial)}`:""}`}`;
+  if(!confirm(summary))return;
+
+  let linked;
+  try{linked=await v20MaterializeParticipantIdentities(decisions);}
+  catch(err){return alert(`Could not create/link player profiles.\n\n${err.message||err}`);}
+  const primary=linked[0],clientId=ctx?.client?.id||primary.client.id;
+
+  const book={session_date:d,start_hour:s,end_hour:en,client_name:primary.full_name,contact:primary.contact,participant_count:n,coaching_type:ctx?ctx.program.name:(window.pickylaV20AdminPricing?.coachingType?.()||coachingType(n)),rate_mode:ctx?"custom":$("rateMode").value,rate_per_person:r,total_amount:total,amount_paid:0,notes:$("bookingNotes").value.trim()||null,status:"confirmed",client_id:clientId,client_program_id:ctx?.enrollment?.id||null,program_session_number:ctx?.sessionNumber||null,session_status:"scheduled",booking_group_id:v20LoadedInquiryGroup?.id||null,booking_kind:v20LoadedInquiryGroup?"multiple":"single",booking_group_size:v20LoadedInquiryGroup?.size||null};
+  const {data:b,error:e1}=await db.from("bookings").insert(book).select().single();if(e1)return alert(e1.message);
+
+  const participantRows=linked.map((p,i)=>({booking_id:b.id,client_id:p.client.id,participant_order:i+1,first_name:p.first_name,last_name:p.last_name,full_name:p.full_name,contact:p.contact,contact_key:v17ContactKey(p.contact),is_primary:i===0}));
+  const {error:pe}=await db.from("booking_participants").insert(participantRows);
+  if(pe){await db.from("bookings").delete().eq("id",b.id);return alert(`Players could not be saved.\n\n${pe.message}`);}
+
+  const slotRows=[];for(let h=s;h<en;h++)slotRows.push({slot_date:d,start_hour:h,status:"booked",client_name:book.client_name,contact:book.contact,coaching_type:book.coaching_type,rate:r,notes:book.notes,booking_id:b.id});
+  const {error:e2}=await db.from("schedule_slots").insert(slotRows);
+  if(e2){await db.from("bookings").delete().eq("id",b.id);return alert(e2.message);}
+  if(initial>0){
+    const {error:payErr}=await db.from("booking_payments").insert({booking_id:b.id,amount:initial,paid_at:todayStr(),payment_method:"Cash",note:"Initial payment recorded when booking was created",source:"booking_create"});
+    if(payErr){await db.from("schedule_slots").delete().eq("booking_id",b.id);await db.from("bookings").delete().eq("id",b.id);return alert(payErr.message);}
+  }
+  if(v17dLoadedInquiryId){await db.from("inquiries").update({status:"confirmed"}).eq("id",v17dLoadedInquiryId);v17dLoadedInquiryId=null;v17dLoadedInquiryParticipants=[];v20LoadedInquiryGroup=null;}
+  toast(ctx?"Program session scheduled":"Booking saved");
+  adminDate.value=d;$("bookingNotes").value="";$("amountPaid").value="0";v17BookingProgramContext=null;$("participantCount").value="1";v17dRenderAdminParticipants(1,[]);$("rateMode").value="standard";updateRate();
+  await Promise.all([loadDay(),loadBookingAvailability(),loadReports(),loadAdminCalendar(),loadInquiries(),loadCollectionAlerts(),loadTodayCommandCenter(),loadPaymentDashboard(),loadV17Clients()]);
+  if(clientId&&v17SelectedClient?.id===clientId)await openV17Client(clientId);
+};
 
 prepareV17ProgramBooking=function(enrollment,program,nextSession){if(!v17SelectedClient||!program)return;v17BookingProgramContext={enrollment,program,client:v17SelectedClient,sessionNumber:nextSession};$("participantCount").value="1";v17dRenderAdminParticipants(1,[{first_name:v17SelectedClient.first_name||v17dSplitLegacyName(v17SelectedClient.full_name).first_name,last_name:v17SelectedClient.last_name||v17dSplitLegacyName(v17SelectedClient.full_name).last_name,contact:v17SelectedClient.contact||null}]);$("rateMode").value="custom";$("ratePerPerson").readOnly=false;$("ratePerPerson").value="0";$("amountPaid").value="0";updateTotal();$("bookingHint").textContent=`PROGRAM MODE • ${program.name} • Session ${nextSession}/${program.session_count}. This session will not add a separate hourly charge; collection is tracked on the fixed-price package.`;$("quickBookingForm").scrollIntoView({behavior:"smooth",block:"start"});};
 
