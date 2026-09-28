@@ -3,7 +3,7 @@
   <link rel="stylesheet" href="admin-v17f.css?v=17f">
   <link rel="stylesheet" href="admin-v17g.css?v=17g">
   <link rel="stylesheet" href="admin-v20-ops.css?v=20ops1">
-  <link rel="stylesheet" href="admin-v20-earnings.css?v=20earn1">
+  <link rel="stylesheet" href="admin-v20-earnings.css?v=20earn1"><link rel="stylesheet" href="admin-v20-turnover.css?v=20turn1">
   <link rel="stylesheet" href="admin-v20-date-picker.css?v=20date1">
   <link rel="stylesheet" href="admin-v20-schedule.css?v=20schedule1">
   <link rel="stylesheet" href="admin-v20-booking.css?v=20book1">
@@ -28,7 +28,7 @@
       <a href="#v20UpcomingSection">Upcoming Bookings</a>
       <a href="#v20PastSection">Past Sessions</a>
       <a href="#v20PaymentSection">Payment Follow-up</a>
-      <a href="#v20CompletedSection">Completed Sessions</a>
+      <a href="#v20CompletedSection">Completed Sessions</a><a href="#v20CancelledSection">Cancelled Bookings</a>
       <span class="v20-admin-nav-group">Finance</span>
       <a href="#paymentDashboardSection">Payments</a>
       <a href="#adminReportsSection">Reports</a>
@@ -82,6 +82,12 @@
   <div id="v20CompletedList" class="v20-ops-list"><div class="empty">Loading completed sessions…</div></div>
   <div class="v20-ops-toggle-row"><button id="v20CompletedToggle" class="secondary" type="button">Show All</button></div>
 </section>
+
+<section class="panel v20-ops-panel" id="v20CancelledSection">
+  <div class="panel-head"><div><span class="eyebrow">CANCELLED</span><h2>Cancelled Bookings</h2><p class="panel-note">Latest cancelled sessions stay here for reference and are automatically excluded from earnings.</p></div><span id="v20CancelledCount" class="v20-ops-count">0</span></div>
+  <div id="v20CancelledList" class="v20-ops-list"><div class="empty">Loading cancelled bookings…</div></div>
+  <div class="v20-ops-toggle-row"><button id="v20CancelledToggle" class="secondary" type="button">Show All</button></div>
+</section>
 </div>
 
 <section class="payment-dashboard panel" id="paymentDashboardSection">
@@ -120,7 +126,7 @@
       <button id="generateWeeklyBtn" class="primary" type="button">Generate Weekly Image</button>
     </div>
   </div>
-  <div class="weekly-export-meta"><strong id="weeklyRangeLabel">Current week</strong><span>Green = Available • Red = Booked • Gray = Blocked • Light gray = Past</span></div>
+  <div class="weekly-export-meta"><strong id="weeklyRangeLabel">Current week</strong><span>Coach copy = names + block reasons • Player / GC copy = privacy-safe</span></div>
   <div id="weeklyPreviewWrap" class="weekly-preview-wrap hidden">
     <img id="weeklyPreview" alt="Generated Pickyla weekly schedule preview">
     <div class="weekly-preview-actions"><button id="downloadWeeklyBtn" class="secondary" type="button">Download PNG</button></div>
@@ -272,4 +278,4 @@
   <div class="editor-actions"><button id="cancelProgressCard" type="button" class="soft-danger">Close</button><button id="downloadProgressCard" type="button" class="primary">Download PNG</button></div>
 </div></dialog>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script><script src="admin.js?v=20identity2"></script><script src="admin-v17f.js?v=17f"></script><script src="admin-v17g.js?v=17g"></script><script src="admin-v20-ops.js?v=20ops3"></script><script src="admin-v20-date-picker.js?v=20date1"></script><script src="admin-v20-schedule.js?v=20schedule1"></script><script src="admin-v20-booking.js?v=20book1"></script><script src="admin-v20-pricing.js?v=20price1"></script><script src="admin-v20-gallery.js?v=20gallery1"></script><script src="v20-weeknav.js?v=20week1"></script><script src="admin-v20-players.js?v=20players1"></script><script src="admin-v20-earnings.js?v=20earn1"></script><script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('service-worker.js').catch(()=>{}));}</script></body></html>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script><script src="admin.js?v=20identity2"></script><script src="admin-v17f.js?v=17f"></script><script src="admin-v17g.js?v=17g"></script><script src="admin-v20-ops.js?v=20ops4"></script><script src="admin-v20-date-picker.js?v=20date1"></script><script src="admin-v20-schedule.js?v=20schedule1"></script><script src="admin-v20-booking.js?v=20book1"></script><script src="admin-v20-pricing.js?v=20price1"></script><script src="admin-v20-gallery.js?v=20gallery1"></script><script src="v20-weeknav.js?v=20week1"></script><script src="admin-v20-players.js?v=20players1"></script><script src="admin-v20-earnings.js?v=20earn1"></script><script src="admin-v20-turnover.js?v=20turn1"></script><script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('service-worker.js').catch(()=>{}));}</script></body></html>
