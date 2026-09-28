@@ -412,9 +412,16 @@ function v20NameSimilarity(a,b){
   const at=ak.split(' ').filter(Boolean),bt=bk.split(' ').filter(Boolean);
   const best=(src,dst)=>src.length?src.reduce((sum,t)=>sum+Math.max(...dst.map(x=>v20TextSimilarity(t,x)),0),0)/src.length:0;
   const token=(best(at,bt)+best(bt,at))/2;
-  const last=v20TextSimilarity(at.at(-1)||'',bt.at(-1)||'');
-  const first=v20TextSimilarity(at[0]||'',bt[0]||'');
-  return Math.min(1,(v20TextSimilarity(ak,bk)*0.48)+(token*0.28)+(last*0.18)+(first*0.06));
+  return Math.min(1,(v20TextSimilarity(ak,bk)*0.60)+(token*0.40));
+}
+function v20GivenNameSimilarity(a,b){
+  const at=v20IdentityKey(a).split(' ').filter(Boolean),bt=v20IdentityKey(b).split(' ').filter(Boolean);
+  if(!at.length||!bt.length)return 0;
+  const scoresA=at.map(x=>Math.max(...bt.map(y=>v20TextSimilarity(x,y)),0)).sort((x,y)=>y-x);
+  const scoresB=bt.map(x=>Math.max(...at.map(y=>v20TextSimilarity(x,y)),0)).sort((x,y)=>y-x);
+  const top=arr=>{const n=Math.min(2,arr.length);return n?arr.slice(0,n).reduce((s,x)=>s+x,0)/n:0;};
+  const strongest=Math.max(...at.flatMap(x=>bt.map(y=>v20TextSimilarity(x,y))),0);
+  return Math.min(1,(top(scoresA)*0.42)+(top(scoresB)*0.28)+(strongest*0.30));
 }
 function v20MaskContact(v){
   const s=String(v||'').trim();if(!s)return 'No contact saved';
@@ -441,15 +448,18 @@ function v20IdentityCandidates(p,pool){
     const exactAlias=aliases.find(a=>key&&key===String(a.alias_key||''));
     let bestAlias=null,bestAliasScore=0;
     aliases.forEach(a=>{const s=v20NameSimilarity(submitted,a.alias_name);if(s>bestAliasScore){bestAliasScore=s;bestAlias=a;}});
-    const canonicalScore=v20NameSimilarity(submitted,client.full_name);
-    let score=Math.max(canonicalScore,bestAliasScore),reason='Similar name';
-    if(exactContact){score=1.08;reason='Same contact';}
-    else if(exactName){score=1.06;reason='Exact name';}
-    else if(exactAlias){score=1.04;reason='Known alias';}
-    const submittedLast=v20IdentityKey(p.last_name).split(' ').at(-1)||'';
-    const clientLast=v20IdentityKey(client.last_name||client.full_name).split(' ').at(-1)||'';
-    if(reason==='Similar name'&&submittedLast&&clientLast&&submittedLast===clientLast)score=Math.min(1,score+0.05);
-    if(score>=0.74)rows.push({client,score,reason,matchedAlias:exactAlias?.alias_name||bestAlias?.alias_name||null});
+    const clientFirst=client.first_name||v17dSplitLegacyName(client.full_name).first_name;
+    const clientLast=client.last_name||v17dSplitLegacyName(client.full_name).last_name;
+    const givenScore=v20GivenNameSimilarity(p.first_name,clientFirst);
+    const surnameScore=v20NameSimilarity(p.last_name,clientLast);
+    let score=(givenScore*0.78)+(surnameScore*0.22),reason='Similar given name';
+    let eligible=givenScore>=0.72&&(surnameScore>=0.34||givenScore>=0.90);
+    if(exactContact){score=1.08;reason='Same contact';eligible=true;}
+    else if(exactName){score=1.06;reason='Exact name';eligible=true;}
+    else if(exactAlias){score=1.04;reason='Known alias';eligible=true;}
+    else if(givenScore>=0.90&&surnameScore<0.34){reason='Strong given-name match';}
+    else if(surnameScore>=0.88){reason='Given name + surname match';}
+    if(eligible&&score>=0.74)rows.push({client,score,reason,matchedAlias:exactAlias?.alias_name||(bestAliasScore>=0.90?bestAlias?.alias_name:null),givenScore,surnameScore});
   }
   return rows.sort((a,b)=>b.score-a.score||String(a.client.full_name).localeCompare(String(b.client.full_name))).slice(0,4);
 }
