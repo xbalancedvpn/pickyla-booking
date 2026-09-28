@@ -17,9 +17,11 @@
     return {total,paid,balance,status:balance<=0.001?'Paid':paid>0?'Partial':'Unpaid'};
   }
   function courtOf(b){
-    if(b?.court_name)return String(b.court_name).trim();
-    const m=String(b?.notes||'').match(/^Court:\\s*(.+)$/mi);
-    return String(m?.[1]||'Court not decided yet').trim();
+    const direct=String(b?.court_name||'').trim();
+    if(direct&&!/^(court not decided yet|not decided yet|not specified|to be confirmed|tbd)$/i.test(direct))return direct;
+    const m=String(b?.notes||'').match(/^Court:\s*(.+)$/mi);
+    const fromNotes=String(m?.[1]||'').trim();
+    return fromNotes||'Court not decided yet';
   }
   function buckets(){
     const today=todayKey();
@@ -145,11 +147,12 @@
     const save=e.submitter,old=save.textContent;
     save.disabled=true;save.textContent='Saving…';errorBox.classList.add('hidden');
     try{
-      const {error}=await db.from('bookings').update({notes}).eq('id',courtTarget.id);
+      const {data:saved,error}=await db.from('bookings').update({notes}).eq('id',courtTarget.id).select('id,notes').maybeSingle();
       if(error)throw error;
+      if(!saved||String(saved.notes||'')!==String(notes||''))throw new Error('Court change was not confirmed by the database.');
 
       const local=state.rows.find(x=>String(x.id)===String(courtTarget.id));
-      if(local)local.notes=notes;
+      if(local)local.notes=saved.notes;
       closeCourtModal();
       renderAll();
       await loadOps(true);
