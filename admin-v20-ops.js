@@ -58,7 +58,7 @@
     if(b.client_id)actions+='<button type="button" data-v20-act="profile" data-id="'+esc(b.id)+'">Player Profile</button>';
     actions+='<button type="button" data-v20-act="card" data-id="'+esc(b.id)+'">Confirmation Card</button>';
     if(kind==='upcoming')actions+='<button type="button" data-v20-act="court" data-id="'+esc(b.id)+'">'+(court==='Court not decided yet'?'Set Court':'Change Court')+'</button>';
-    if(p.balance>0.001&&!b.client_program_id)actions+='<button type="button" class="primary" data-v20-act="pay" data-id="'+esc(b.id)+'">'+(kind==='payment'?'Record Remaining Payment':'Record Payment')+'</button>';
+    if(kind!=='cancelled'&&p.balance>0.001&&!b.client_program_id)actions+='<button type="button" class="primary" data-v20-act="pay" data-id="'+esc(b.id)+'">'+(kind==='payment'?'Record Remaining Payment':'Record Payment')+'</button>';
     if(kind==='completed'||kind==='payment'){
       const excluded=String(b.session_outcome_note||'').includes('[FINANCE_EXCLUDE]');
       actions+='<button type="button" class="v20-finance-exclude '+(excluded?'active':'')+'" data-v20-act="finance" data-id="'+esc(b.id)+'">'+(excluded?'Include in Income':'Exclude from Income')+'</button>';
