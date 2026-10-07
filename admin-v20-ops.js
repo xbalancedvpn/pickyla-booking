@@ -57,7 +57,7 @@
     let actions='';
     if(b.client_id)actions+='<button type="button" data-v20-act="profile" data-id="'+esc(b.id)+'">Player Profile</button>';
     actions+='<button type="button" data-v20-act="card" data-id="'+esc(b.id)+'">Confirmation Card</button>';
-    if(kind==='upcoming'||kind==='past')actions+='<button type="button" data-v20-act="edit" data-id="'+esc(b.id)+'">Edit Booking</button>';
+    if(kind==='upcoming'||kind==='past'||kind==='completed'||kind==='payment')actions+='<button type="button" data-v20-act="edit" data-id="'+esc(b.id)+'">Edit Booking</button>';
     if(kind==='upcoming')actions+='<button type="button" data-v20-act="court" data-id="'+esc(b.id)+'">'+(court==='Court not decided yet'?'Set Court':'Change Court')+'</button>';
     if(kind!=='cancelled'&&p.balance>0.001&&!b.client_program_id)actions+='<button type="button" class="primary" data-v20-act="pay" data-id="'+esc(b.id)+'">'+(kind==='payment'?'Record Remaining Payment':'Record Payment')+'</button>';
     if(kind==='completed'||kind==='payment'){
