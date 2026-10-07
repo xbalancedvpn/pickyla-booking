@@ -57,6 +57,7 @@
     let actions='';
     if(b.client_id)actions+='<button type="button" data-v20-act="profile" data-id="'+esc(b.id)+'">Player Profile</button>';
     actions+='<button type="button" data-v20-act="card" data-id="'+esc(b.id)+'">Confirmation Card</button>';
+    if(kind==='upcoming'||kind==='past')actions+='<button type="button" data-v20-act="edit" data-id="'+esc(b.id)+'">Edit Booking</button>';
     if(kind==='upcoming')actions+='<button type="button" data-v20-act="court" data-id="'+esc(b.id)+'">'+(court==='Court not decided yet'?'Set Court':'Change Court')+'</button>';
     if(kind!=='cancelled'&&p.balance>0.001&&!b.client_program_id)actions+='<button type="button" class="primary" data-v20-act="pay" data-id="'+esc(b.id)+'">'+(kind==='payment'?'Record Remaining Payment':'Record Payment')+'</button>';
     if(kind==='completed'||kind==='payment'){
@@ -175,6 +176,136 @@
     }
   }
 
+
+  let editTarget=null;
+  const editHourly=(n,mode)=>mode==='group'?Number(n)*250:400+Math.max(0,Number(n)-1)*200;
+  function editModeFor(b){return /group drills/i.test(String(b?.coaching_type||''))||Number(b?.participant_count||1)>=4?'group':'private';}
+  function fillHourSelect(select,min,max,current){
+    select.innerHTML='';
+    for(let h=min;h<=max;h++){
+      const o=document.createElement('option');o.value=String(h);o.textContent=hour(h);select.appendChild(o);
+    }
+    select.value=String(current);
+  }
+  function editSyncPax(){
+    const mode=byId('v20EditMode')?.value||'private',sel=byId('v20EditPax');if(!sel)return;
+    const min=mode==='group'?4:1,max=mode==='group'?12:3,cur=Number(sel.value||editTarget?.participant_count||min);
+    sel.innerHTML='';
+    for(let n=min;n<=max;n++){const o=document.createElement('option');o.value=String(n);o.textContent=n+' player'+(n===1?'':'s');sel.appendChild(o);}
+    sel.value=String(Math.min(max,Math.max(min,cur)));
+    editRecalc();
+  }
+  function editRecalc(){
+    if(!editTarget)return;
+    const mode=byId('v20EditMode')?.value||'private',n=Number(byId('v20EditPax')?.value||1),start=Number(byId('v20EditStart')?.value||8),end=Number(byId('v20EditEnd')?.value||start+1),rateMode=byId('v20EditRateMode')?.value||'standard',rate=byId('v20EditRate');
+    if(rateMode==='standard'){rate.value=editHourly(n,mode).toFixed(2);rate.readOnly=true;}else rate.readOnly=false;
+    const hourlyRate=Number(rate.value||0),hrs=Math.max(1,end-start),total=hourlyRate*hrs,paid=paidFor(editTarget),balance=Math.max(0,total-paid);
+    byId('v20EditTotal').textContent=money(total);
+    byId('v20EditCalc').textContent=hrs+' hr × '+money(hourlyRate)+'/hr';
+    byId('v20EditPaid').textContent='Collected '+money(paid)+' • New balance '+money(balance);
+    const err=byId('v20EditError');if(err)err.classList.add('hidden');
+  }
+  function editSyncEnd(){
+    const start=Number(byId('v20EditStart')?.value||8),end=byId('v20EditEnd'),current=Math.max(start+1,Number(end?.value||start+1));
+    if(end)fillHourSelect(end,start+1,24,Math.min(24,current));
+    editRecalc();
+  }
+  function ensureEditModal(){
+    let modal=byId('v20EditBookingModal');if(modal)return modal;
+    modal=document.createElement('div');modal.id='v20EditBookingModal';modal.className='v20-edit-modal hidden';
+    modal.innerHTML='<div class="v20-edit-backdrop" data-edit-close></div>'+
+      '<form id="v20EditBookingForm" class="v20-edit-card" novalidate>'+
+        '<button type="button" class="v20-edit-x" data-edit-close aria-label="Close">×</button>'+
+        '<span class="eyebrow">EDIT CONFIRMED BOOKING</span><h2>Edit booking</h2><p id="v20EditMeta" class="panel-note"></p>'+
+        '<div class="v20-edit-grid">'+
+          '<label>Date<input id="v20EditDate" type="date" data-date-title="Booking date"></label>'+
+          '<label>Coaching type<select id="v20EditMode"><option value="private">Private Coaching</option><option value="group">Group Drills Training</option></select></label>'+
+          '<label>Start time<select id="v20EditStart"></select></label>'+
+          '<label>End time<select id="v20EditEnd"></select></label>'+
+          '<label>Players<select id="v20EditPax"></select></label>'+
+          '<label>Court<select id="v20EditCourt"><option value="">Court not decided yet</option><option>NANOMOLY</option><option>DINK VALLEY</option><option>HC SANTIAGO</option><option>CASA PLAY</option><option>COURTYARD</option><option value="OTHERS">OTHERS</option></select></label>'+
+          '<label id="v20EditCourtOtherWrap" class="hidden v20-edit-full">Other court<input id="v20EditCourtOther" maxlength="120" placeholder="Enter court name"></label>'+
+          '<label>Rate type<select id="v20EditRateMode"><option value="standard">Standard coaching rate</option><option value="custom">Custom hourly rate</option></select></label>'+
+          '<label>Hourly coaching rate<input id="v20EditRate" type="number" min="0" step="50"></label>'+
+        '</div>'+
+        '<div class="v20-edit-summary"><span>Updated coaching fee</span><strong id="v20EditTotal">₱0</strong><small id="v20EditCalc"></small><small id="v20EditPaid"></small></div>'+
+        '<p class="v20-edit-note">Saving updates the booking schedule, finance totals, weekly/admin schedule, and future confirmation cards. Existing payments are preserved.</p>'+
+        '<div id="v20EditError" class="v20-edit-error hidden"></div>'+
+        '<div class="v20-edit-actions"><button type="button" class="secondary" data-edit-close>Cancel</button><button id="v20EditSave" type="submit" class="primary">Save Changes</button></div>'+
+      '</form>';
+    document.body.appendChild(modal);
+    modal.querySelectorAll('[data-edit-close]').forEach(x=>x.addEventListener('click',closeEditModal));
+    byId('v20EditMode').addEventListener('change',editSyncPax);
+    byId('v20EditPax').addEventListener('change',editRecalc);
+    byId('v20EditStart').addEventListener('change',editSyncEnd);
+    byId('v20EditEnd').addEventListener('change',editRecalc);
+    byId('v20EditRateMode').addEventListener('change',editRecalc);
+    byId('v20EditRate').addEventListener('input',editRecalc);
+    byId('v20EditCourt').addEventListener('change',()=>{
+      byId('v20EditCourtOtherWrap').classList.toggle('hidden',byId('v20EditCourt').value!=='OTHERS');
+    });
+    byId('v20EditBookingForm').addEventListener('submit',saveEditModal);
+    window.pickylaV20DatePicker?.scan?.();
+    return modal;
+  }
+  function closeEditModal(){
+    const modal=byId('v20EditBookingModal');if(modal)modal.classList.add('hidden');
+    document.body.classList.remove('v20-modal-open');editTarget=null;
+  }
+  async function openEditModal(b){
+    editTarget=b;
+    const modal=ensureEditModal(),mode=editModeFor(b),court=courtOf(b),select=byId('v20EditCourt'),other=byId('v20EditCourtOther');
+    byId('v20EditMeta').textContent=(b.client_name||'Player')+' • '+String(b.session_date||'')+' • '+hour(b.start_hour)+'–'+hour(b.end_hour);
+    byId('v20EditDate').value=String(b.session_date||'');
+    byId('v20EditMode').value=mode;
+    fillHourSelect(byId('v20EditStart'),8,23,Number(b.start_hour||8));
+    fillHourSelect(byId('v20EditEnd'),Number(b.start_hour||8)+1,24,Number(b.end_hour||Number(b.start_hour||8)+1));
+    editSyncPax();byId('v20EditPax').value=String(Number(b.participant_count||1));
+    const known=[...select.options].map(o=>o.value);
+    if(court==='Court not decided yet'){select.value='';other.value='';}
+    else if(known.includes(court)){select.value=court;other.value='';}
+    else{select.value='OTHERS';other.value=court;}
+    byId('v20EditCourtOtherWrap').classList.toggle('hidden',select.value!=='OTHERS');
+    byId('v20EditRateMode').value=b.rate_mode==='custom'?'custom':'standard';
+    byId('v20EditRate').value=Number(b.hourly_coaching_rate??b.rate_per_person??editHourly(b.participant_count,mode)).toFixed(2);
+    editRecalc();
+    modal.classList.remove('hidden');document.body.classList.add('v20-modal-open');
+    setTimeout(()=>byId('v20EditDate')?.focus(),0);
+  }
+  async function saveEditModal(e){
+    e.preventDefault();if(!editTarget)return;
+    const save=byId('v20EditSave'),old=save.textContent,err=byId('v20EditError');
+    const date=byId('v20EditDate').value,start=Number(byId('v20EditStart').value),end=Number(byId('v20EditEnd').value),n=Number(byId('v20EditPax').value),mode=byId('v20EditMode').value,rateMode=byId('v20EditRateMode').value,rate=Number(byId('v20EditRate').value||0),total=(end-start)*rate;
+    let court=byId('v20EditCourt').value;if(court==='OTHERS')court=String(byId('v20EditCourtOther').value||'').trim();
+    if(!date||!start||!end||end<=start){err.textContent='Choose a valid date and time range.';err.classList.remove('hidden');return;}
+    if(byId('v20EditCourt').value==='OTHERS'&&!court){err.textContent='Enter the court name.';err.classList.remove('hidden');return;}
+    save.disabled=true;save.textContent='Saving…';err.classList.add('hidden');
+    try{
+      const {data,error}=await db.rpc('edit_confirmed_booking',{
+        p_booking_id:editTarget.id,p_session_date:date,p_start_hour:start,p_end_hour:end,p_participant_count:n,
+        p_coaching_type:mode==='group'?'Group Drills Training':'Private Coaching',p_rate_mode:rateMode,
+        p_hourly_rate:rate,p_total_amount:total,p_court:court||null
+      });
+      if(error)throw error;
+      closeEditModal();
+      if(typeof toast==='function')toast('Booking updated');
+      await loadOps(true);
+      const jobs=[];
+      if(typeof loadReports==='function')jobs.push(loadReports());
+      if(typeof loadTodayCommandCenter==='function')jobs.push(loadTodayCommandCenter());
+      if(typeof loadPaymentDashboard==='function')jobs.push(loadPaymentDashboard());
+      if(typeof loadCollectionAlerts==='function')jobs.push(loadCollectionAlerts());
+      if(typeof loadAdminCalendar==='function')jobs.push(loadAdminCalendar());
+      if(typeof loadBookingAvailability==='function')jobs.push(loadBookingAvailability());
+      if(typeof loadDay==='function')jobs.push(loadDay());
+      await Promise.allSettled(jobs);
+      document.dispatchEvent(new CustomEvent('coach:data-changed',{detail:{bookingId:editTarget?.id}}));
+    }catch(x){
+      console.error('Pickyla booking edit failed:',x);
+      err.textContent=x?.message||'Could not update this booking.';err.classList.remove('hidden');
+    }finally{save.disabled=false;save.textContent=old;}
+  }
+
   function bindActions(list,rows){
     const map=new Map(rows.map(b=>[String(b.id),b]));
     list.querySelectorAll('[data-v20-act]').forEach(btn=>{
@@ -185,6 +316,7 @@
           if(typeof openV17Client==='function')await openV17Client(b.client_id);
           return;
         }
+        if(act==='edit'){openEditModal(b);return;}
         if(act==='card'){
           if(typeof openConfirmationCard==='function')await openConfirmationCard({...b,amount_paid:paidFor(b)});
           return;
@@ -302,5 +434,12 @@
     });
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
-  window.pickylaV20Ops={refresh:()=>loadOps(true)};
+  window.pickylaV20Ops={refresh:()=>loadOps(true),editBooking:async bookingOrId=>{
+    let b=bookingOrId;
+    if(typeof bookingOrId==='string'){
+      b=state.rows.find(x=>String(x.id)===String(bookingOrId));
+      if(!b){const {data}=await db.from('bookings').select('*').eq('id',bookingOrId).maybeSingle();b=data;}
+    }
+    if(b)openEditModal(b);
+  }};
 })();
