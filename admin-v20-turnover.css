@@ -63,55 +63,56 @@
 
 /* Pickyla v20 - Kyle-inspired finance report + admin grouping */
 .v20-kyle-flow-heading{margin:34px 0 12px;padding:0 4px;scroll-margin-top:92px}
-.v20-kyle-flow-heading h2{margin:5px 0 6px;font:800 clamp(28px,4vw,38px)/1 Manrope,sans-serif;letter-spacing:-1.2px;text-transform:uppercase}
+.v20-kyle-flow-heading h2{margin:5px 0 6px;font:800 clamp(28px,4vw,38px)/1 Manrope,sans-serif;letter-spacing:-1.2px;text-transform:uppercase;color:#111}
 .v20-kyle-flow-heading p{margin:0;color:#767676;max-width:780px;font-size:12px;line-height:1.55}
 .v20-kyle-flow-heading .eyebrow{color:#9a7600}
-.v20-kyle-finance-report{margin:0 0 18px!important;background:#090909!important;color:#f7f7f7!important;border:1px solid #2d2a18!important;box-shadow:0 18px 48px rgba(0,0,0,.18)!important;scroll-margin-top:92px}
+.v20-kyle-finance-report{margin:0 0 18px!important;background:#fff!important;color:#111!important;border:1px solid var(--line)!important;box-shadow:0 12px 32px rgba(24,47,31,.05)!important;scroll-margin-top:92px}
 .v20-kyle-finance-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
-.v20-kyle-finance-head h2{margin:5px 0 7px!important;font:800 clamp(24px,3vw,31px)/1.05 Manrope,sans-serif!important;color:#fff!important}
-.v20-kyle-finance-head p{margin:0;color:#888;font-size:11px;line-height:1.55;max-width:720px}
-.v20-kyle-finance-report .eyebrow{color:#ffd600!important}
-.v20-kyle-money-tag{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:7px 10px;background:#ffd600;color:#080808;font-size:9px;font-weight:900;letter-spacing:.08em}
-.v20-kyle-report-period{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;padding:16px;border:1px solid #302b13;background:#111008;border-radius:15px;margin-top:18px}
-.v20-kyle-report-period strong{display:block;margin-top:5px;color:#ffd600;font:800 clamp(23px,4vw,31px)/1.2 Manrope,sans-serif;letter-spacing:-.7px}
+.v20-kyle-finance-head h2{margin:5px 0 7px!important;font:800 clamp(24px,3vw,31px)/1.05 Manrope,sans-serif!important;color:#111!important}
+.v20-kyle-finance-head p{margin:0;color:var(--muted);font-size:11px;line-height:1.55;max-width:720px}
+.v20-kyle-finance-report .eyebrow{color:#9a7600!important}
+.v20-kyle-money-tag{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:7px 10px;background:#f5c400;color:#111;font-size:9px;font-weight:900;letter-spacing:.08em}
+.v20-kyle-report-period{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;padding:16px;border:1px solid #eed98a;background:#fff7d6;border-radius:15px;margin-top:18px}
+.v20-kyle-report-period strong{display:block;margin-top:5px;color:#111;font:800 clamp(23px,4vw,31px)/1.2 Manrope,sans-serif;letter-spacing:-.7px}
 .v20-kyle-period-buttons{display:flex;gap:7px;flex-wrap:wrap}
-.v20-kyle-period-buttons button{min-height:42px;padding:10px 14px;border:1px solid #383838;border-radius:11px;background:#151515;color:#e7e7e7;font-weight:900;cursor:pointer}
-.v20-kyle-period-buttons button.active{background:#ffd600;color:#080808;border-color:#ffd600}
+.v20-kyle-period-buttons button{min-height:42px;padding:10px 14px;border:1px solid #e2dccf;border-radius:11px;background:#fff;color:#111;font-weight:900;cursor:pointer}
+.v20-kyle-period-buttons button.active{background:#f5c400;color:#111;border-color:#f5c400}
 .v20-kyle-custom-dates{display:grid;grid-template-columns:1fr 1fr auto;gap:11px;align-items:end;margin-top:14px}
 .v20-kyle-custom-dates.is-hidden{display:none}
-.v20-kyle-custom-dates label,.v20-kyle-filter-row label{display:grid;gap:7px;color:#a0a0a0!important;font-size:10px!important;font-weight:900!important;text-transform:uppercase;letter-spacing:.08em}
-.v20-kyle-custom-dates input,.v20-kyle-filter-row select{width:100%;min-height:48px;padding:12px 14px;border:1px solid #333!important;border-radius:11px!important;background:#0b0b0b!important;color:#fff!important;box-shadow:none!important}
+.v20-kyle-custom-dates label,.v20-kyle-filter-row label{display:grid;gap:7px;color:#6f6a60!important;font-size:10px!important;font-weight:900!important;text-transform:uppercase;letter-spacing:.08em}
+.v20-kyle-custom-dates input,.v20-kyle-filter-row select{width:100%;min-height:48px;padding:12px 14px;border:1px solid var(--line)!important;border-radius:11px!important;background:#fff!important;color:#111!important;box-shadow:none!important}
+.v20-kyle-custom-dates input:focus,.v20-kyle-filter-row select:focus{border-color:#d6b300!important;box-shadow:0 0 0 3px #fff3bd!important}
 .v20-kyle-custom-dates .v20-date-input{cursor:pointer}
-.v20-kyle-apply{min-height:48px;padding:12px 22px;border:0;border-radius:11px;background:#ffd600;color:#070707;font-weight:900;text-transform:uppercase;cursor:pointer}
+.v20-kyle-apply{min-height:48px;padding:12px 22px;border:0;border-radius:11px;background:#111;color:#f5c400;font-weight:900;text-transform:uppercase;cursor:pointer}
 .v20-kyle-filter-row{display:grid;grid-template-columns:minmax(230px,420px) auto;gap:11px;align-items:end;margin-top:14px}
-.v20-kyle-export{min-height:48px;padding:12px 22px;border:1px solid #353535;border-radius:11px;background:#171717;color:#fff;font-weight:900;text-transform:uppercase;cursor:pointer}
+.v20-kyle-export{min-height:48px;padding:12px 22px;border:1px solid #e3ddcf;border-radius:11px;background:#fff8df;color:#111;font-weight:900;text-transform:uppercase;cursor:pointer}
 .v20-kyle-report-metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:17px 0}
-.v20-kyle-report-metrics article{min-width:0;background:#0b0b0b;border:1px solid #292929;border-radius:14px;padding:15px}
-.v20-kyle-report-metrics span{display:block;color:#858585;font-size:9px;font-weight:800;line-height:1.35;text-transform:uppercase;letter-spacing:.04em}
-.v20-kyle-report-metrics strong{display:block;color:#ffd600;font:800 clamp(20px,2.6vw,27px)/1.05 Manrope,sans-serif;margin-top:7px;overflow-wrap:anywhere}
-.v20-kyle-paid-breakdown{color:#a7a7a7;font-size:11px;margin:-3px 0 8px}
-.v20-kyle-range-label{color:#777;font-size:10px;margin:0 0 14px}
+.v20-kyle-report-metrics article{min-width:0;background:#fff7d6;border:1px solid #eed98a;border-radius:14px;padding:15px}
+.v20-kyle-report-metrics span{display:block;color:#756118;font-size:9px;font-weight:800;line-height:1.35;text-transform:uppercase;letter-spacing:.04em}
+.v20-kyle-report-metrics strong{display:block;color:#111;font:800 clamp(20px,2.6vw,27px)/1.05 Manrope,sans-serif;margin-top:7px;overflow-wrap:anywhere}
+.v20-kyle-paid-breakdown{color:#766f62;font-size:11px;margin:-3px 0 8px}
+.v20-kyle-range-label{color:#8a8378;font-size:10px;margin:0 0 14px}
 .v20-kyle-report-charts{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0}
-.v20-kyle-report-charts article{min-width:0;border:1px solid #292929;background:#0b0b0b;border-radius:15px;padding:14px}
-.v20-kyle-report-charts h3{margin:0 0 5px;color:#fff;font:800 17px Manrope,sans-serif}
-.v20-kyle-report-charts p{margin:0 0 10px;color:#777;font-size:10px;line-height:1.45}
+.v20-kyle-report-charts article{min-width:0;border:1px solid var(--line);background:#fff;border-radius:15px;padding:14px}
+.v20-kyle-report-charts h3{margin:0 0 5px;color:#111;font:800 17px Manrope,sans-serif}
+.v20-kyle-report-charts p{margin:0 0 10px;color:var(--muted);font-size:10px;line-height:1.45}
 .v20-kyle-report-charts canvas{display:block;width:100%!important;height:260px!important;max-height:260px}
 .v20-kyle-report-table{margin-top:15px}
-.v20-kyle-report-table .empty{border-color:#333!important;color:#858585!important;background:#0c0c0c!important}
-.v20-kyle-table-scroll{overflow:auto;border:1px solid #292929;border-radius:14px;background:#0b0b0b}
-.v20-kyle-table-scroll table{width:100%;min-width:880px;border-collapse:collapse;background:#0b0b0b}
-.v20-kyle-table-scroll th,.v20-kyle-table-scroll td{padding:11px 10px;border-bottom:1px solid #252525;text-align:left;font-size:11px;white-space:nowrap}
-.v20-kyle-table-scroll th{color:#797979;text-transform:uppercase;font-size:9px;letter-spacing:.07em}
-.v20-kyle-table-scroll td{color:#d8d8d8}
-.v20-kyle-table-scroll td strong{color:#fff}
-.v20-kyle-table-scroll td small{display:block;color:#777;margin-top:4px}
-.v20-kyle-pill{display:inline-block;padding:5px 8px;border-radius:999px;background:#252525;color:#bdbdbd;font-size:8px;font-weight:900;text-transform:uppercase}
-.v20-kyle-pill.paid{background:#11371e;color:#8cffab}
-.v20-kyle-pill.partial{background:#3b300c;color:#ffe36e}
-.v20-kyle-pill.unpaid{background:#401717;color:#ff9c9c}
-.v20-kyle-finance-footnote{margin-top:13px;padding:11px 12px;border-radius:11px;background:#111;color:#777;font-size:9px;line-height:1.5}
+.v20-kyle-report-table .empty{border-color:#d8d3c6!important;color:#777!important;background:#fffaf0!important}
+.v20-kyle-table-scroll{overflow:auto;border:1px solid var(--line);border-radius:14px;background:#fff}
+.v20-kyle-table-scroll table{width:100%;min-width:880px;border-collapse:collapse;background:#fff}
+.v20-kyle-table-scroll th,.v20-kyle-table-scroll td{padding:11px 10px;border-bottom:1px solid #eeeae0;text-align:left;font-size:11px;white-space:nowrap}
+.v20-kyle-table-scroll th{color:#776f62;text-transform:uppercase;font-size:9px;letter-spacing:.07em;background:#fff7d6}
+.v20-kyle-table-scroll td{color:#2b2b2b}
+.v20-kyle-table-scroll td strong{color:#111}
+.v20-kyle-table-scroll td small{display:block;color:#888;margin-top:4px}
+.v20-kyle-pill{display:inline-block;padding:5px 8px;border-radius:999px;background:#f1efe9;color:#5f5a52;font-size:8px;font-weight:900;text-transform:uppercase}
+.v20-kyle-pill.paid{background:#e3f4df;color:#2f6331}
+.v20-kyle-pill.partial{background:#fff4c5;color:#6b5200}
+.v20-kyle-pill.unpaid{background:#fff0ee;color:#9e413b}
+.v20-kyle-finance-footnote{margin-top:13px;padding:11px 12px;border-radius:11px;background:#fff9e6;color:#776c57;font-size:9px;line-height:1.5;border:1px solid #f0df9b}
 .v20-secondary-finance{margin-top:0!important;margin-bottom:18px!important}
-.v20-secondary-finance .chart-card{box-shadow:none}
+.v20-secondary-finance .chart-card{box-shadow:0 12px 32px rgba(24,47,31,.05)}
 .v20-advanced-finance{margin-top:0!important;scroll-margin-top:92px}
 .v20-advanced-finance .panel-head h2{margin-bottom:5px}
 @media(max-width:900px){
