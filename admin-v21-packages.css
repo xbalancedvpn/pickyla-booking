@@ -1,1 +1,11 @@
 .pkg-v21-admin{margin-top:20px}.pkg-v21-admin h3{font-size:17px;margin:20px 0 12px}.pkg-v21-admin-settings{border:1px solid #dce2e8;border-radius:12px;padding:12px;margin:12px 0}.pkg-v21-admin-settings summary{cursor:pointer}.pkg-v21-admin-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:18px}.pkg-v21-admin-grid label,.pkg-v21-program-row label{font-size:12px;display:grid;gap:5px}.pkg-v21-admin-grid input,.pkg-v21-program-row input{max-width:100%;min-width:0;box-sizing:border-box;padding:9px;border:1px solid #d4dbe4;border-radius:8px}.pkg-v21-switch{display:flex!important;align-items:center;gap:7px}.pkg-v21-switch input{width:auto}.pkg-v21-program-row{margin-top:12px;padding:15px;background:#f8fafc;border-radius:12px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.pkg-v21-program-row>div{grid-column:1/-1;display:grid;gap:3px}.pkg-v21-program-row small{font-size:11px;color:#52657a}.pkg-v21-request{padding:13px;border:1px solid #dde5ed;border-radius:12px;margin:9px 0}.pkg-v21-request>div:first-child{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.pkg-v21-request p{font-size:12px;color:#52657a;margin:7px 0}.pkg-v21-admin-actions{display:flex;gap:9px;flex-wrap:wrap}.pkg-v21-admin-actions button{font-size:12px;padding:9px}.pkg-v21-alert{color:#a82727!important}@media(max-width:650px){.pkg-v21-admin-grid,.pkg-v21-program-row{grid-template-columns:1fr}}
+.pkg-v22-bell-badge{position:absolute;top:-6px;right:-6px;background:#df3c27;color:#fff;border-radius:20px;font:800 10px/1 Arial,sans-serif;min-width:18px;min-height:18px;display:grid;place-items:center;box-shadow:0 1px 3px #0003}
+.pkg-v22-bell-badge[hidden]{display:none!important}
+#adminNotificationBtn{position:relative}
+.pkg-v22-bell-section{margin-top:18px;padding:16px 12px;background:#f9fafc;border:1px solid #dbe4ee;border-radius:12px}
+.pkg-v22-bell-section h3{margin:0 0 7px;font-size:16px}
+.pkg-v22-bell-section h3 span{background:#e2edf9;border-radius:20px;padding:3px 8px;color:#264867;font-size:12px}
+.pkg-v22-bell-item{border-top:1px solid #dbe2eb;padding:12px 0;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.pkg-v22-bell-item b{width:100%;font-size:13px}
+.pkg-v22-bell-item small{width:100%;font-size:11px;color:#566979}
+.pkg-v22-bell-item button{padding:8px 10px}
