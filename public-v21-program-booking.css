@@ -112,3 +112,8 @@
 #pkgV23Today{background:#f2c627;border-color:#e5b822}
 .pkg-v23-date-foot{margin:18px 0 0;text-align:center;color:#858079;font-size:10px;letter-spacing:.02em}
 @media(max-width:480px){.pkg-v23-date-panel{padding:18px 15px}.pkg-v23-weekdays,.pkg-v23-days{gap:4px}.pkg-v23-days button{border-radius:9px;font-size:12px}}
+
+/* Explicit light Pickyla booking footer and centered ownership credit (v24). */
+#pickylaProgramV21 .pkg-v21-brand-footer{background:#fff9e8!important;color:#3f3a2e!important;border-top:1px solid #e9d89d!important;border-radius:12px!important;text-align:center!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;gap:5px!important;margin:20px 0 0!important;padding:18px 12px!important;box-shadow:none!important}
+#pickylaProgramV21 .pkg-v21-brand-footer strong{color:#26201b!important;font-weight:900!important}
+#pickylaProgramV21 .pkg-v21-brand-footer span,#pickylaProgramV21 .pkg-v21-brand-footer small{display:block!important;color:#4d4533!important;text-align:center!important;width:100%!important;line-height:1.45!important}
