@@ -213,10 +213,14 @@ async function createConfirmationCard(r,slots){
  ctx.fillText('Please retain this card for your scheduled coaching days.',59,footerY+80);
  ctx.fillStyle='#596475';ctx.font='500 15px system-ui,sans-serif';
  ctx.fillText('Court rental fees are not included. Rescheduling follows Pickyla policy.',59,footerY+107);
+ // Credits centered independently from the left-aligned confirmation information.
+ ctx.save();
+ ctx.textAlign='center';
  ctx.fillStyle='#293544';ctx.font='800 15px system-ui,sans-serif';
- ctx.fillText('©2026 XBALANCED DIGITAL SOLUTIONS',59,footerY+154);
+ ctx.fillText('©2026 XBALANCED DIGITAL SOLUTIONS',w/2,footerY+154);
  ctx.fillStyle='#6e7783';ctx.font='600 14px system-ui,sans-serif';
- ctx.fillText('Developed by ELDWIN GASPAR',59,footerY+177);
+ ctx.fillText('Developed by ELDWIN GASPAR',w/2,footerY+177);
+ ctx.restore();
  const summary=[
   'PICKYLA — BOOKING CONFIRMED / PAYMENT VERIFIED',
   'Booking reference: '+r.reference,
