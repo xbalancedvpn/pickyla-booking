@@ -95,16 +95,60 @@ function renderGoalRecommendation(){const box=document.getElementById("goalRecom
 function escapePublic(v){return String(v??"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));}
 function pesoPublic(v){return `₱${Number(v||0).toLocaleString("en-PH",{minimumFractionDigits:0,maximumFractionDigits:2})}`;}
 function selectProgramInterest(p,scroll=true){selectedProgramInterest=p;if(Array.isArray(p.focus_areas)&&p.focus_areas.length&&!selectedGoalFocus){chooseGoal(p.focus_areas[0],focusLabels[p.focus_areas[0]]||p.focus_areas[0]);}updateCoachingContext();updateSummary();document.querySelectorAll(".public-program-card").forEach(c=>c.classList.toggle("featured",c.dataset.programId===p.id));if(scroll)document.getElementById("booking")?.scrollIntoView({behavior:"smooth",block:"start"});}
+// Promos are marketing content too: never show a blank section after one mobile
+// connection failure. Keep booking locked until a fresh live query succeeds.
+function renderPromoConnectionFallback(grid){
+  const backup=[
+    {type:'one',name:'1-ON-1',players:'PRIVATE COACHING',price:'₱2,000',bonus:'Save ₱400'},
+    {type:'duo',name:'DUO',players:'2 PLAYERS',price:'₱3,000',bonus:'Save ₱600'},
+    {type:'group',name:'GROUP TRAINING',players:'4 PLAYERS',price:'₱5,000',bonus:'+₱1,000 per additional player'}
+  ];
+  grid.innerHTML='<div class="pickyla-promo-offline-note" role="status"><strong>Having trouble connecting to the live schedule.</strong> These are the advertised promo packages. Booking and current availability are temporarily locked until we reconnect.<button type="button" class="pickyla-promo-retry">Retry Connection</button></div>'+
+    backup.map(p=>'<article class="public-program-card pickyla-promo-card pickyla-promo-'+p.type+'">'+
+      '<span class="pickyla-promo-card-topline">5+1 COACHING HOURS PROMO</span>'+
+      '<h3>'+p.name+'</h3><span class="pickyla-promo-format">'+p.players+'</span>'+
+      '<span class="pickyla-promo-offer">3 days × 2 hours</span>'+
+      '<div class="program-public-price">'+p.price+'</div>'+
+      '<p class="pickyla-promo-price-label">FULL 6-HOUR PACKAGE</p>'+
+      '<div class="pickyla-promo-savings">'+p.bonus+'</div>'+
+      '<p class="pickyla-promo-reconnect-note">Live availability required before booking.</p>'+
+      '<div class="program-public-actions"><button type="button" class="pickyla-promo-retry">Reconnect to Schedule</button></div>'+
+    '</article>').join('');
+  grid.querySelectorAll('.pickyla-promo-retry').forEach(btn=>btn.addEventListener('click',()=>{
+    grid.querySelectorAll('.pickyla-promo-retry').forEach(b=>{b.disabled=true;b.textContent='Connecting…';});
+    loadPublicPrograms();
+  }));
+}
+let lastPromoRequest=0;
 async function loadPublicPrograms(){
   const grid=document.getElementById("publicProgramGrid");if(!grid)return;
-  const [{data:programs,error},{data:sessions}]=await Promise.all([
-    db.from("coaching_programs").select("id,name,description,overall_goal,session_count,session_duration_hours,fixed_price,package_additional_player_price,package_format,package_min_participants,package_max_participants,focus_areas,is_active").eq("is_active",true).order("created_at"),
-    db.from("coaching_program_sessions").select("program_id,session_number,title,goal").order("session_number")
-  ]);
-  if(error){
-    grid.innerHTML='<div class="public-loading">Coaching promos are temporarily unavailable. You can still book a regular session below.</div>';
+  const request=++lastPromoRequest;
+  let result={data:null,error:new Error('Not connected')};
+  for(let attempt=0;attempt<3;attempt++){
+    try{
+      result=await db.from("coaching_programs")
+        .select("id,name,session_count,session_duration_hours,fixed_price,package_additional_player_price,package_format,package_min_participants,package_max_participants,is_active")
+        .eq("is_active",true).order("created_at");
+    }catch(err){result={data:null,error:err};}
+    if(request!==lastPromoRequest)return;
+    if(!result.error&&Array.isArray(result.data)&&result.data.length)break;
+    if(attempt<2)await new Promise(resolve=>setTimeout(resolve,(attempt+1)*650));
+  }
+  if(request!==lastPromoRequest)return;
+  if(result.error||!result.data?.length){
+    console.warn('[Pickyla Promos] Public program query failed:',result.error?.code||'',result.error?.message||'No active programs returned');
+    if(!grid.querySelector('.program-interest'))renderPromoConnectionFallback(grid);
     return;
   }
+  const programs=result.data;
+  let sessions=[];
+  try{
+    const details=await db.from("coaching_program_sessions")
+      .select("program_id,session_number,title,goal").order("session_number");
+    if(!details.error)sessions=details.data||[];
+    else console.warn('[Pickyla Promos] Session goals could not load:',details.error?.code||'');
+  }catch(_){ /* The promo cards do not depend on optional goal descriptions. */ }
+  if(request!==lastPromoRequest)return;
   const byProgram=new Map();
   (sessions||[]).forEach(row=>{
     if(!byProgram.has(row.program_id))byProgram.set(row.program_id,[]);
@@ -158,6 +202,14 @@ async function loadPublicPrograms(){
   });
   if(selectedGoalFocus)renderGoalRecommendation();
 }
+window.addEventListener('online',()=>{
+  const grid=document.getElementById('publicProgramGrid');
+  if(grid&&!grid.querySelector('.program-interest'))loadPublicPrograms();
+});
+document.addEventListener('visibilitychange',()=>{
+  const grid=document.getElementById('publicProgramGrid');
+  if(document.visibilityState==='visible'&&grid&&grid.querySelector('.pickyla-promo-offline-note'))loadPublicPrograms();
+});
 async function loadTestimonials(){const section=document.getElementById("testimonialsSection"),grid=document.getElementById("testimonialGrid");if(!section||!grid)return;section.classList.remove("hidden");const {data,error}=await db.from("testimonials").select("display_name,player_level,quote,sort_order").eq("is_published",true).eq("review_status","approved").order("sort_order").order("created_at");if(error||!(data||[]).length){grid.innerHTML='<div class="testimonial-empty">Published player stories will appear here. You can be the first to share your experience.</div>';return;}grid.innerHTML=(data||[]).map(t=>`<article class="testimonial-card"><div class="quote-mark">“</div><blockquote>${escapePublic(t.quote)}</blockquote><strong>${escapePublic(t.display_name)}</strong><small>${escapePublic(t.player_level||"Pickyla Client")}</small></article>`).join("");}
 async function loadLiveAvailabilityIndicator(){const badge=document.getElementById("liveAvailabilityBadge");if(!badge)return;const now=new Date(),sun=new Date(now);sun.setHours(0,0,0,0);sun.setDate(sun.getDate()-sun.getDay());const sat=new Date(sun);sat.setDate(sun.getDate()+6);const {data,error}=await db.from("public_schedule").select("slot_date,start_hour,status").gte("slot_date",keyDate(sun)).lte("slot_date",keyDate(sat));if(error){badge.querySelector("strong").textContent="Live schedule available below";return;}const map=new Map((data||[]).map(r=>[`${r.slot_date}|${Number(r.start_hour)}`,r.status]));let open=0,todayOpen=0;for(let i=0;i<7;i++){const d=new Date(sun);d.setDate(sun.getDate()+i);for(let h=8;h<24;h++){const slot=new Date(d);slot.setHours(h,0,0,0);if(slot<=now)continue;if((map.get(`${keyDate(d)}|${h}`)||"available")==="available"){open++;if(keyDate(d)===keyDate(now))todayOpen++;}}}badge.classList.remove("limited","full");if(open===0){badge.classList.add("full");badge.querySelector("strong").textContent="No open hours left this week";}else if(open<=5){badge.classList.add("limited");badge.querySelector("strong").textContent=`Limited availability • ${open} open hour${open===1?"":"s"} this week`;}else{badge.querySelector("strong").textContent=todayOpen?`${todayOpen} open hour${todayOpen===1?"":"s"} today • ${open} this week`:`${open} open coaching hours this week`;}}
 // v17-E public testimonial submission -> admin review first.
