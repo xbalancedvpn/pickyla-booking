@@ -419,8 +419,8 @@
           '<td>'+money(x.cash_asof)+'<small>'+esc(x.paid_date||'')+'</small></td>'+
           '<td>'+Number(x.used_sessions||0)+' / '+Number(x.total_sessions||0)+'</td><td><strong>'+money(x.advance)+'</strong>'+
           '<small>'+(x.state==='earned'?'Fully earned':'Awaiting final coaching day')+'</small></td></tr>').join('')+'</tbody></table></div>':
-        '<p class="v23-package-muted">No verified, non-test promo package collections as of this report date.</p>')+
-      (Number(fin.test_package_count)>0?'<p class="v23-package-testnote">'+Number(fin.test_package_count)+' clearly named test package(s) excluded from real accounting; '+money(fin.test_package_value)+' of test verifications occurred in this report period. Test payments remain in the historical database for audit only.</p>':'')+
+        '<p class="v23-package-muted">No verified promo package collections as of this report date.</p>')+
+      '<p class="v23-package-muted">Verified bank receipts are included regardless of player naming. For demo transactions, confirm that payment was actually received before verifying them.</p>'+
       '<p class="v23-package-muted">Court rental is excluded. The totals above are already included in the main Finance metrics; they are not additional charges.</p>';
   }
   async function report(){
@@ -469,7 +469,7 @@
       id('v20KyleOutstanding').textContent=money(outstanding);
       id('v20KyleAdvance').textContent=money(adv);
       id('v20KylePaidBreakdown').textContent=full.length+' regular sessions fully paid ('+done+' completed · '+pre+
-        ' prepaid) + '+Number(fin?.verified_package_count||0)+' verified non-test promo(s)';
+        ' prepaid) + '+Number(fin?.verified_package_count||0)+' verified promo package(s)';
       id('v20KyleRangeLabel').textContent=pretty(from)+' – '+pretty(to)+' · '+shown.length+' of '+rows.length+' regular sessions';
       renderPackageFinanceSummary(fin,from,to);
       table(shown);
