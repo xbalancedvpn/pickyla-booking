@@ -62,3 +62,53 @@
 .pkg-v21-proof-label{display:grid;gap:10px;font-size:13px;font-weight:700;color:#233c57;margin:17px 0 10px}
 .pkg-v21-proof-label input{display:block;width:100%;padding:14px;background:#f6f9fc;border:1px dashed #b4c5d5;border-radius:10px}
 @media(max-width:520px){.pkg-v21-court-fields{grid-template-columns:1fr}}
+
+/* v23 Pickyla light promo booking: ivory, white, sun-yellow and charcoal */
+.pkg-v21-overlay{background:rgba(22,22,20,.56);backdrop-filter:blur(5px)}
+.pkg-v21-sheet{background:#fffdf6!important;color:#1a1e23!important;border:1px solid #eadca7;box-shadow:0 24px 70px #0004}
+.pkg-v21-header{border-bottom:3px solid #f2c627}
+.pkg-v21-sheet h2,.pkg-v21-sheet h3,.pkg-v21-session>strong{color:#1b1e22}
+.pkg-v21-eyebrow{color:#9c7100;font-weight:900;letter-spacing:.12em}
+.pkg-v21-meta,.pkg-v21-player,.pkg-v21-session,.pkg-v21-payment-meta{background:#fffaf0;border-color:#eddfbb;color:#292a2b}
+.pkg-v21-types button{background:#fff!important;border:1px solid #e7d9b5;color:#262626}
+.pkg-v21-types button.active{background:#fff4b5!important;border-color:#efc123}
+.pkg-v21-sheet label,.pkg-v21-small{color:#4b4a48}
+.pkg-v21-sheet input,.pkg-v21-sheet select,.pkg-v21-sheet textarea{background:#fff;color:#272727;border-color:#d8ceb1}
+.pkg-v21-sheet [data-session-date],#pkgV21ResDate{background:#fff url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="%23ad8613" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"%3E%3Crect x="3" y="4" width="18" height="18" rx="2"/%3E%3Cpath d="M16 2v4M8 2v4M3 10h18"/%3E%3C/svg%3E') no-repeat right 12px center!important;padding-right:45px;cursor:pointer}
+.pkg-v21-sheet input:focus-visible,.pkg-v21-sheet select:focus-visible,.pkg-v21-sheet textarea:focus-visible{outline:2px solid #e4b820;outline-offset:2px}
+#pkgV21Close{background:#fff1ba;color:#232323}
+.pkg-v21-main{background:#f2c627!important;border-color:#e7b817!important;color:#181818!important;box-shadow:none}
+.pkg-v21-main:hover:not(:disabled){background:#ffe078!important}
+.pkg-v21-secondary{background:#fff;border-color:#e3d2a4;color:#2c2c28}
+.pkg-v21-secondary:hover{background:#fff8df}
+.pkg-v21-total strong,.pkg-v21-payment-meta strong{color:#1c1c1c}
+.pkg-v21-payment-meta small{color:#95700c}
+.pkg-v21-brand-footer{display:grid;gap:4px;margin-top:26px;padding:20px 8px 8px;text-align:center;border-top:1px solid #eadbac;color:#616161;font-size:11px}
+.pkg-v21-brand-footer strong{font-weight:900;color:#1e1e1e;letter-spacing:.13em;font-size:12px}
+.pkg-v21-brand-footer span{font-weight:750}
+.pkg-v21-brand-footer small{font-size:10px;color:#777}
+/* Branded Monday-first calendar, overriding Android native date UX */
+.pkg-v23-date-dialog{position:fixed;width:min(96vw,475px);max-height:min(92dvh,730px);padding:0;border:0;border-radius:24px;box-shadow:0 30px 90px #0006;background:#fffdf5;color:#171b22;overflow-y:auto}
+.pkg-v23-date-dialog::backdrop{background:rgba(15,17,20,.65)}
+.pkg-v23-date-panel{padding:22px}
+.pkg-v23-date-heading{display:flex;align-items:start;justify-content:space-between;gap:12px;padding-bottom:15px;border-bottom:2px solid #f1c22b}
+.pkg-v23-date-heading span{font-size:10px;color:#a27b0d;font-weight:900;letter-spacing:.1em}
+.pkg-v23-date-heading h2{margin:5px 0;color:#171b22;font-size:clamp(19px,4vw,25px);line-height:1.18;font-weight:900}
+.pkg-v23-date-heading p{margin:7px 0 0;font-size:11px;color:#777;line-height:1.55}
+#pkgV23Close{width:36px;height:36px;border:0;border-radius:10px;background:#ffedac;font-size:24px;flex:0 0 auto;color:#1e1e1e;cursor:pointer}
+.pkg-v23-date-nav{display:grid;grid-template-columns:40px 1fr 40px;gap:12px;align-items:center;margin:18px 0 14px}
+.pkg-v23-date-nav strong{text-align:center;font-size:16px;font-weight:900;color:#232323}
+.pkg-v23-date-nav button{min-height:40px;border:1px solid #e7d8ac;border-radius:12px;background:#fff4c2;color:#161616;font-size:24px;cursor:pointer}
+.pkg-v23-date-nav button:disabled,.pkg-v23-date-actions button:disabled{opacity:.3}
+.pkg-v23-weekdays,.pkg-v23-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+.pkg-v23-weekdays span{color:#9c791c;font-weight:900;font-size:10px;text-align:center;padding:8px 0}
+.pkg-v23-days button,.pkg-v23-date-blank{aspect-ratio:1;min-width:0}
+.pkg-v23-days button{border:1px solid #ecdfbf;background:#fff;border-radius:11px;font-size:13px;font-weight:850;color:#212121;cursor:pointer}
+.pkg-v23-days button.today{border:2px solid #e0b421;background:#fff8dd}
+.pkg-v23-days button.selected{background:#f2c627;border-color:#f2c627;color:#101010}
+.pkg-v23-days button:disabled{opacity:.25;background:#fafafa;cursor:not-allowed}
+.pkg-v23-date-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:17px}
+.pkg-v23-date-actions button{min-height:40px;border-radius:11px;border:1px solid #e4d4ab;background:white;font-size:12px;font-weight:800;color:#222;cursor:pointer}
+#pkgV23Today{background:#f2c627;border-color:#e5b822}
+.pkg-v23-date-foot{margin:18px 0 0;text-align:center;color:#858079;font-size:10px;letter-spacing:.02em}
+@media(max-width:480px){.pkg-v23-date-panel{padding:18px 15px}.pkg-v23-weekdays,.pkg-v23-days{gap:4px}.pkg-v23-days button{border-radius:9px;font-size:12px}}
