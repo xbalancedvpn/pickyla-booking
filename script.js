@@ -152,7 +152,7 @@ async function loadPublicPrograms(){
       '<div class="pickyla-promo-savings">'+(save[type]||'GROUP VALUE PACKAGE')+'</div>'+
       extras+
       (goals?'<details class="pickyla-promo-details"><summary>See coaching session goals</summary><div class="program-goals-public">'+goals+'</div></details>':'')+
-      '<div class="program-public-actions"><button type="button" class="program-interest">I\'m Interested</button></div>';
+      '<div class="program-public-actions"><button type="button" class="program-interest">Choose Promo Schedule</button></div>';
     card.querySelector(".program-interest").onclick=()=>selectProgramInterest(p,true);
     grid.appendChild(card);
   });
