@@ -31,7 +31,16 @@
       '<div id="pkgV21Players"></div>'+
       '<div class="pkg-v21-total"><span>Full package price (upfront)</span><strong id="pkgV21Total"></strong><small id="pkgV21PriceHint">Court rental is not included.</small></div>'+
       '<button type="button" class="pkg-v21-main" id="pkgV21Reserve">Reserve schedules & proceed to payment</button>'+
-      '<p class="pkg-v21-small">Schedule holds last 30 minutes until you report payment. Payment must be verified before booking confirmation.</p>'+
+      '<p class="pkg-v21-small" id="pkgV21ReserveHelp">The promo includes 3 coaching days with 2 consecutive hours each. You can review your schedule before confirming.</p>'+
+    '</div>'+
+    '<div id="pkgV21Preview" class="hidden">'+
+      '<h3>Review Your Promo Schedule</h3>'+
+      '<p class="pkg-v21-preview-warning"><strong>PREVIEW ONLY — NO RESERVATION OR PAYMENT.</strong> Your choices are not yet reserved. Please do not transfer money until the official booking checkout is enabled or Kyla gives confirmed instructions.</p>'+
+      '<div id="pkgV21PreviewDetails" class="pkg-v21-preview-details"></div>'+
+      '<button type="button" class="pkg-v21-secondary" id="pkgV21PreviewBack">Edit schedule or participants</button>'+
+      '<button type="button" class="pkg-v21-secondary" id="pkgV21PreviewCopy">Copy promo schedule inquiry</button>'+
+      '<button type="button" class="pkg-v21-main" id="pkgV21PreviewMessage">Message Coach Kyla</button>'+
+      '<p class="pkg-v21-small">Message Coach Kyla directly. Sending an inquiry does not hold the selected dates or confirm a package.</p>'+
     '</div>'+
     '<div id="pkgV21Payment" class="hidden">'+
       '<h3>Bank QR payment</h3><p class="pkg-v21-small">Pay the exact amount, save a screenshot of the successful transfer, and send it through Messenger for verification.</p>'+
@@ -50,8 +59,8 @@
   P('pkgV21Close').onclick=()=>{root.classList.add('hidden');document.body.classList.remove('pkg-v21-scrolllock');};
   root.addEventListener('click',e=>{if(e.target===root)P('pkgV21Close').click();});
   function notice(text,isError){const el=P('pkgV21Notice');el.textContent=text||'';el.classList.toggle('hidden',!text);el.classList.toggle('error',!!isError);}
-  function show(stage){for(const key of ['Form','Payment','Done'])P('pkgV21'+key).classList.toggle('hidden',key!==stage);root.classList.remove('hidden');document.body.classList.add('pkg-v21-scrolllock');P('pkgV21Close').focus();}
-  function checkoutEnabled(){return !!(state.settings&&state.settings.enabled&&state.settings.qr_image_url&&state.settings.account_name&&state.settings.bank_name&&state.settings.messenger_url);}
+  function show(stage){for(const key of ['Form','Preview','Payment','Done'])P('pkgV21'+key).classList.toggle('hidden',key!==stage);root.classList.remove('hidden');document.body.classList.add('pkg-v21-scrolllock');P('pkgV21Close').focus();}
+  function checkoutEnabled(){return !!(state.program?.package_booking_enabled&&state.settings&&state.settings.enabled&&state.settings.qr_image_url&&state.settings.account_name&&state.settings.bank_name&&state.settings.messenger_url);}
   function priceFor(){const p=state.program;if(!p)return 0;const extra=p.package_format==='group'?Math.max(0,headcount()-Number(p.package_min_participants||4))*Number(p.package_additional_player_price||0):0;return Number(p.fixed_price||0)+extra;}
   function headcount(){return state.type==='one'?1:state.type==='duo'?2:state.count;}
   function renderTypes(){
@@ -149,9 +158,12 @@
     const scheduleValid=dates.length===count&&unique.size===count&&state.sessions.every(s=>s&&s.date&&Number.isInteger(s.start)&&validStarts(s.date).includes(s.start));
     const players=savedPlayers();
     const namesValid=players.length===headcount()&&players.every(p=>p.first_name&&p.last_name&&p.first_name.length<=60&&p.last_name.length<=80)&&!!players[0]?.contact;
-    const valid=scheduleValid&&namesValid&&state.price>0&&checkoutEnabled()&&Number.isInteger(duration);
+    const valid=scheduleValid&&namesValid&&state.price>0&&Number.isInteger(duration);
     btn.disabled=!valid||state.loading;
-    btn.textContent=checkoutEnabled()?'Reserve schedules & proceed to payment':'Package checkout setup pending';
+    btn.textContent=checkoutEnabled()?'Reserve schedules & proceed to payment':'Review My Promo Schedule';
+    P('pkgV21ReserveHelp').textContent=checkoutEnabled()?
+      'Your selected hours will be held for 30 minutes when you proceed to bank payment. Confirmation follows payment verification.':
+      'Preview only: you can plan all 3 coaching dates and contact Coach Kyla. No slots are reserved and no payment is collected here.';
     return valid;
   }
   async function openProgram(summary){
@@ -165,15 +177,15 @@
         db.rpc('program_payment_settings_v21'),
         db.from('coaching_program_sessions').select('session_number,title').eq('program_id',summary.id).order('session_number')
       ]);
-      if(prog.error)throw prog.error;if(sett.error)throw sett.error;if(sessions.error)throw sessions.error;
-      if(!prog.data?.is_active||!prog.data?.package_booking_enabled)throw new Error('This program is not yet enabled for online package booking. Please contact Kyla.');
+      if(prog.error)throw prog.error;if(sessions.error)throw sessions.error;
+      if(!prog.data?.is_active)throw new Error('This coaching promo is currently unavailable. Please contact Coach Kyla.');
       const p=prog.data;
       if(!Number.isInteger(Number(p.session_duration_hours))||p.session_count>14||p.session_count<1)throw new Error('This program needs an admin schedule configuration before online booking.');
-      state.program={...p,sessions:sessions.data||[]};state.settings=Array.isArray(sett.data)?sett.data[0]||null:null;
+      state.program={...p,sessions:sessions.data||[]};state.settings=!sett.error&&Array.isArray(sett.data)?sett.data[0]||null:null;
       state.type=p.package_format;state.count=p.package_min_participants;state.sessions=Array.from({length:p.session_count},()=>({date:'',start:null}));state.participants=[];
       P('pkgV21Meta').textContent=p.session_count+' sessions • '+p.session_duration_hours+' consecutive hours each • 14 calendar days';
       renderTypes();renderSessions();renderPlayers();renderTotal();
-      if(!checkoutEnabled())notice('Online bank QR setup is not yet available. Please contact Kyla for package booking.',true);
+      if(!checkoutEnabled())notice('Promo schedule preview is available! Choose your dates and participants, then review your plan. No payment or reservation will be made yet.');
     }catch(err){P('pkgV21Meta').textContent='Package checkout unavailable';P('pkgV21Sessions').innerHTML='';P('pkgV21Types').innerHTML='';P('pkgV21Players').innerHTML='';P('pkgV21Reserve').disabled=true;notice(err.message||String(err),true);}
   }
   async function reserve(){
@@ -202,7 +214,34 @@
     return ['PICKYLA SESSION PROGRAM','Reference: '+state.reference,'Program: '+state.program.name,'Coaching: '+state.type.toUpperCase(),'Players: '+headcount(),'Participants: '+players.map(p=>p.first_name+' '+p.last_name).join(', '),'Sessions:',...state.sessions.map((s,i)=>(i+1)+'. '+nice(s.date)+' • '+hour(s.start)+' – '+hour(s.start+duration)),'Full package payment: '+money(state.price),'Payment proof: Please see attached bank transfer screenshot.'].join('\n');
   }
   async function copyText(text){try{await navigator.clipboard.writeText(text);notice('Details copied. Paste them into your Messenger chat.');}catch(_){notice('Clipboard permission is unavailable. Please copy the details manually.',true);}}
-  P('pkgV21Reserve').onclick=reserve;
+  function previewMessage(){
+    const participants=savedPlayers(),duration=Number(state.program.session_duration_hours);
+    return [
+      'PICKYLA 5+1 COACHING PROMO — SCHEDULE INQUIRY',
+      'PREVIEW ONLY — NO CONFIRMED RESERVATION OR PAYMENT',
+      'Program: '+state.program.name,
+      'Format: '+state.type.toUpperCase(),
+      'Participants ('+headcount()+'): '+participants.map(p=>p.first_name+' '+p.last_name).join(', '),
+      'Contact: '+(participants[0]?.contact||''),
+      'Requested coaching dates:',
+      ...state.sessions.map((x,i)=>(i+1)+'. '+nice(x.date)+' | '+hour(x.start)+' to '+hour(x.start+duration)),
+      'Total: '+money(state.price)+' for '+state.sessions.length*duration+' coaching hours (court fee excluded).',
+      'Please confirm availability and official booking/payment instructions.'
+    ].join('\n');
+  }
+  function previewSchedule(){
+    if(!checkReady()||state.loading)return;
+    P('pkgV21PreviewDetails').textContent=previewMessage();
+    notice('');
+    show('Preview');
+  }
+  P('pkgV21Reserve').onclick=()=>checkoutEnabled()?reserve():previewSchedule();
+  P('pkgV21PreviewBack').onclick=()=>{notice('');show('Form');};
+  P('pkgV21PreviewCopy').onclick=()=>copyText(previewMessage());
+  P('pkgV21PreviewMessage').onclick=()=>{
+    window.open('https://www.facebook.com/kylaniczz/','_blank','noopener,noreferrer');
+    copyText(previewMessage());
+  };
   P('pkgV21Copy').onclick=()=>copyText(paymentText());
   P('pkgV21SaveQr').onclick=()=>{
     if(state.settings&&/^https:\/\//i.test(state.settings.qr_image_url))
@@ -276,8 +315,8 @@
       const button=card.querySelector('.program-interest');
       if(!button)return;
       const enabled=acceptingPackagePayments&&onlineProgramIds.has(id);
-      button.textContent=enabled?'Book Full Package':"I'm Interested";
-      button.setAttribute('aria-label',enabled?'Book all sessions for '+card.querySelector('h3')?.textContent:'Express interest in this program');
+      button.textContent=enabled?'Book Full Promo Package':'Choose Promo Schedule';
+      button.setAttribute('aria-label',enabled?'Book all sessions for this promo':'Choose dates and preview this coaching promo');
     });
   }
   async function refreshPackageActivation(){
@@ -301,7 +340,7 @@
     const suggested=event.target.closest('#useRecommendedProgram');
     if(!cardButton&&!suggested)return;
     const found=cardButton?publicPrograms.find(x=>x.id===cardButton.closest('[data-program-id]')?.dataset.programId):publicPrograms.find(x=>selectedGoalFocus&&Array.isArray(x.focus_areas)&&x.focus_areas.includes(selectedGoalFocus));
-    if(!found||!acceptingPackagePayments||!onlineProgramIds.has(found.id))return;
+    if(!found)return;
     event.preventDefault();event.stopImmediatePropagation();
     openProgram(found);
   },true);
