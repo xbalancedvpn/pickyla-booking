@@ -74,6 +74,172 @@ async function programs(){
  });
  if(!data?.length)el.textContent='No programs yet.';
 }
+// Official, downloadable Pickyla confirmation card: only generated after ADMIN
+// verifies the actual bank payment. Automatic booking on upload remains unchanged.
+const cardDialog=document.createElement('dialog');
+cardDialog.id='pkgV22ConfirmationDialog';
+cardDialog.className='pkg-v22-card-dialog';
+cardDialog.setAttribute('aria-labelledby','pkgV22CardTitle');
+cardDialog.innerHTML='<div class="pkg-v22-card-shell">'+
+ '<div class="pkg-v22-card-head"><div><span class="pkg-v22-card-eyebrow">PAYMENT VERIFIED</span><h2 id="pkgV22CardTitle">Booking Confirmation Card</h2><p>Ready to download and share with the client.</p></div>'+
+ '<button type="button" id="pkgV22CardClose" class="pkg-v22-card-close" aria-label="Close confirmation card">×</button></div>'+
+ '<div class="pkg-v22-card-image-wrap"><img id="pkgV22CardImage" alt="Official Pickyla coaching package confirmation with players, schedule and courts"></div>'+
+ '<div class="pkg-v22-card-buttons"><button type="button" id="pkgV22CardDownload" class="primary">Download Confirmation PNG</button>'+
+ '<button type="button" id="pkgV22CardCopy" class="secondary">Copy Booking Details</button>'+
+ '<button type="button" id="pkgV22CardDismiss" class="secondary">Close</button></div></div>';
+document.body.appendChild(cardDialog);
+let latestCard=null;
+const closeCard=()=>cardDialog.close();
+$('pkgV22CardClose').onclick=closeCard;
+$('pkgV22CardDismiss').onclick=closeCard;
+function prettyDay(iso){
+ const date=new Date(String(iso)+'T12:00:00Z');
+ return date.toLocaleDateString('en-PH',{weekday:'long',month:'short',day:'numeric',year:'numeric',timeZone:'UTC'});
+}
+function prettyHour(value){
+ const h=Number(value);return h===24?'12:00 MN':(h%12||12)+':00 '+(h<12?'AM':'PM');
+}
+function drawRounded(ctx,x,y,w,h,r,color){
+ const q=Math.min(r,w/2,h/2);
+ ctx.beginPath();ctx.moveTo(x+q,y);ctx.lineTo(x+w-q,y);
+ ctx.quadraticCurveTo(x+w,y,x+w,y+q);ctx.lineTo(x+w,y+h-q);
+ ctx.quadraticCurveTo(x+w,y+h,x+w-q,y+h);ctx.lineTo(x+q,y+h);
+ ctx.quadraticCurveTo(x,y+h,x,y+h-q);ctx.lineTo(x,y+q);
+ ctx.quadraticCurveTo(x,y,x+q,y);ctx.closePath();
+ ctx.fillStyle=color;ctx.fill();
+}
+function drawFit(ctx,str,x,y,max){
+ let text=String(str??'');
+ if(ctx.measureText(text).width>max){
+  while(text.length&&ctx.measureText(text+'…').width>max)text=text.slice(0,-1);
+  text+='…';
+ }
+ ctx.fillText(text,x,y);
+}
+function createConfirmationCard(r,slots){
+ const players=(Array.isArray(r.participants)?r.participants:[]).map(p=>
+  [p.first_name,p.last_name].filter(Boolean).join(' ').trim()).filter(Boolean);
+ const count=Math.max(1,players.length);
+ const rows=Math.ceil(count/2);
+ const slotsSorted=[...slots].sort((a,b)=>Number(a.session_number)-Number(b.session_number));
+ const participantFirstY=601,participantEnd=participantFirstY+(rows-1)*42+28;
+ const sessionsHeadingY=participantEnd+55,cardsStart=sessionsHeadingY+32;
+ const cardsEnd=cardsStart+slotsSorted.length*158+Math.max(0,slotsSorted.length-1)*12;
+ const footerY=cardsEnd+36;
+ const w=1080,h=footerY+166;
+ const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+ const ctx=canvas.getContext('2d');if(!ctx)throw Error('Your browser cannot generate the confirmation image.');
+ ctx.fillStyle='#f0f3f8';ctx.fillRect(0,0,w,h);
+ // Pickyla brand header
+ ctx.fillStyle='#111923';ctx.fillRect(0,0,w,237);
+ ctx.fillStyle='#f2c657';ctx.fillRect(0,231,w,6);
+ ctx.strokeStyle='#f2c657';ctx.lineWidth=4;
+ ctx.beginPath();ctx.arc(90,79,37,0,Math.PI*2);ctx.stroke();
+ ctx.font='700 46px Georgia,serif';ctx.fillStyle='#f2c657';ctx.textAlign='center';
+ ctx.fillText('P',90,94);ctx.textAlign='left';
+ ctx.fillStyle='#ffffff';ctx.font='800 40px system-ui,sans-serif';ctx.fillText('PICKYLA',151,91);
+ ctx.font='700 15px system-ui,sans-serif';ctx.fillStyle='#cbd3de';ctx.fillText('COACHING PROGRAMS',151,119);
+ drawRounded(ctx,730,57,290,56,15,'#283828');
+ ctx.fillStyle='#d9f5c5';ctx.font='800 21px system-ui,sans-serif';ctx.fillText('✓  PAYMENT VERIFIED',750,92);
+ ctx.font='800 58px system-ui,sans-serif';ctx.fillStyle='#ffffff';ctx.fillText('BOOKING CONFIRMED',60,178);
+ ctx.font='500 19px system-ui,sans-serif';ctx.fillStyle='#c9d3dc';ctx.fillText('Your coaching package is officially confirmed and ready.',62,209);
+ // Package and payment summary
+ drawRounded(ctx,52,261,976,244,24,'#ffffff');
+ ctx.fillStyle='#758294';ctx.font='800 17px system-ui,sans-serif';ctx.fillText('PACKAGE AVAILED',83,303);
+ ctx.fillStyle='#162436';ctx.font='800 32px system-ui,sans-serif';drawFit(ctx,r.program_name,83,345,620);
+ ctx.fillStyle='#65748a';ctx.font='700 17px system-ui,sans-serif';
+ const format={one:'1-on-1 Private Coaching',duo:'Duo Coaching',group:'Group Coaching'}[r.format]||'Coaching';
+ ctx.fillText(format+'  •  '+slotsSorted.length+' coaching days',83,385);
+ ctx.fillStyle='#758294';ctx.font='800 17px system-ui,sans-serif';ctx.fillText('BOOKING REFERENCE',83,438);
+ ctx.fillStyle='#142338';ctx.font='800 27px system-ui,sans-serif';ctx.fillText(r.reference,83,469);
+ ctx.fillStyle='#916c16';ctx.font='800 17px system-ui,sans-serif';ctx.fillText('PAID PACKAGE',731,303);
+ ctx.fillStyle='#161d28';ctx.font='800 43px system-ui,sans-serif';ctx.fillText(money(r.price_amount),731,350);
+ ctx.fillStyle='#617087';ctx.font='700 16px system-ui,sans-serif';
+ const totalH=slotsSorted.reduce((acc,x)=>acc+Number(x.end_hour)-Number(x.start_hour),0);
+ ctx.fillText(totalH+' hours total coaching',733,390);
+ ctx.font='600 15px system-ui,sans-serif';
+ ctx.fillText('Verified '+new Date(r.verified_at||Date.now()).toLocaleDateString('en-PH',{timeZone:'Asia/Manila',month:'short',day:'numeric',year:'numeric'}),733,463);
+ // Participants
+ ctx.fillStyle='#192c40';ctx.font='800 23px system-ui,sans-serif';
+ ctx.fillText('REGISTERED PLAYERS',58,560);
+ ctx.fillStyle='#6c7d8c';ctx.font='700 17px system-ui,sans-serif';ctx.fillText('('+players.length+')',341,560);
+ players.forEach((name,i)=>{
+  const x=i%2===0?60:555,y=participantFirstY+Math.floor(i/2)*42;
+  ctx.fillStyle='#b18b35';ctx.font='800 16px system-ui,sans-serif';ctx.fillText(String(i+1).padStart(2,'0'),x,y);
+  ctx.fillStyle='#213248';ctx.font='700 21px system-ui,sans-serif';drawFit(ctx,name,x+39,y,430);
+ });
+ // Every scheduled date and its original or updated venue
+ ctx.fillStyle='#192c40';ctx.font='800 23px system-ui,sans-serif';
+ ctx.fillText('YOUR CONFIRMED COACHING SCHEDULE',58,sessionsHeadingY);
+ slotsSorted.forEach((slot,i)=>{
+  const y=cardsStart+i*170;
+  drawRounded(ctx,52,y,976,158,18,'#ffffff');
+  drawRounded(ctx,52,y,8,158,4,'#e0ad37');
+  drawRounded(ctx,76,y+28,58,58,17,'#172231');
+  ctx.font='800 27px system-ui,sans-serif';ctx.fillStyle='#f2c657';ctx.textAlign='center';
+  ctx.fillText(String(slot.session_number||i+1),105,y+67);ctx.textAlign='left';
+  ctx.font='700 17px system-ui,sans-serif';ctx.fillStyle='#6c7c90';ctx.fillText('COACHING DAY '+(slot.session_number||i+1),153,y+41);
+  ctx.font='800 27px system-ui,sans-serif';ctx.fillStyle='#172436';drawFit(ctx,prettyDay(slot.slot_date),153,y+80,544);
+  ctx.font='700 22px system-ui,sans-serif';ctx.fillStyle='#7a651c';
+  ctx.fillText(prettyHour(slot.start_hour)+'  –  '+prettyHour(slot.end_hour),153,y+119);
+  ctx.fillStyle='#66778a';ctx.font='800 16px system-ui,sans-serif';ctx.fillText('COURT VENUE',729,y+61);
+  ctx.fillStyle='#182638';ctx.font='800 20px system-ui,sans-serif';
+  const court=slot.court_name&&slot.court_name!=='NO COURT YET'?slot.court_name:'To be confirmed';
+  drawFit(ctx,court,729,y+95,265);
+ });
+ // Card footer
+ ctx.fillStyle='#172231';ctx.fillRect(0,footerY,w,166);
+ ctx.fillStyle='#f2c657';ctx.fillRect(0,footerY,w,5);
+ ctx.fillStyle='#f3d489';ctx.font='800 22px system-ui,sans-serif';ctx.fillText('OFFICIAL PICKYLA COACHING CONFIRMATION',59,footerY+46);
+ ctx.fillStyle='#ffffff';ctx.font='600 17px system-ui,sans-serif';
+ ctx.fillText('Please retain this card for your scheduled coaching days.',59,footerY+83);
+ ctx.fillStyle='#cbd5df';ctx.font='500 15px system-ui,sans-serif';
+ ctx.fillText('Court rental fees are not included. Rescheduling follows Pickyla policy.',59,footerY+113);
+ ctx.fillStyle='#a7b5c2';ctx.font='600 13px system-ui,sans-serif';
+ ctx.fillText('PICKYLA  •  COACH KYLA',59,footerY+144);
+ const summary=[
+  'PICKYLA — BOOKING CONFIRMED / PAYMENT VERIFIED',
+  'Booking reference: '+r.reference,
+  'Program: '+r.program_name,
+  'Coaching: '+format,
+  'Participants: '+players.join(', '),
+  'Full package payment: '+money(r.price_amount),
+  'Scheduled coaching days:',
+  ...slotsSorted.map((sl,i)=>(i+1)+'. '+prettyDay(sl.slot_date)+' | '+prettyHour(sl.start_hour)+' – '+prettyHour(sl.end_hour)+' | Court: '+(sl.court_name||'NO COURT YET')),
+  'Court rental not included.'
+ ].join('\n');
+ return {reference:r.reference,image:canvas.toDataURL('image/png'),summary};
+}
+async function openConfirmationCard(requestId){
+ // Never generate an official verified card from an unverified browser-side status.
+ const {data:r,error:e}=await db.from('program_package_requests')
+  .select('id,reference,program_name,format,participants,participant_count,price_amount,verified_at,payment_verification_status,status')
+  .eq('id',requestId).single();
+ if(e)throw e;
+ if(r.status!=='confirmed'||r.payment_verification_status!=='verified')
+  throw Error('Only a verified, confirmed package can receive an official confirmation card.');
+ const {data:slots,error:se}=await db.from('program_package_slots')
+  .select('session_number,slot_date,start_hour,end_hour,court_name,booking_id')
+  .eq('request_id',requestId).order('session_number');
+ if(se)throw se;
+ if(!slots?.length||slots.some(x=>!x.booking_id))
+  throw Error('Unable to load the complete confirmed coaching schedule.');
+ latestCard=createConfirmationCard(r,slots);
+ $('pkgV22CardImage').src=latestCard.image;
+ if(!cardDialog.open)cardDialog.showModal();
+}
+$('pkgV22CardDownload').onclick=()=>{
+ if(!latestCard)return;
+ const a=document.createElement('a');
+ a.href=latestCard.image;
+ a.download='Pickyla-Booking-Confirmation-'+latestCard.reference+'.png';
+ document.body.appendChild(a);a.click();a.remove();
+};
+$('pkgV22CardCopy').onclick=async()=>{
+ if(!latestCard)return;
+ try{await navigator.clipboard.writeText(latestCard.summary);notice('Confirmed booking details copied — ready to send to the client.');}
+ catch(_){window.prompt('Copy the booking details:',latestCard.summary);}
+};
 async function requests(){
  const {data,error}=await db.from('program_package_requests')
   .select('id,reference,program_name,format,participant_count,participants,price_amount,status,created_at,hold_until,payment_verification_status,payment_proof_path')
@@ -121,14 +287,29 @@ async function requests(){
       else{
         notice(label==='verify'?'Payment verified and recorded in Finance.':label==='cancel'?'Package cancelled and all reserved slots released.':'Hold released.');
         await requests();await loadPackageNotifications();
+        if(label==='verify'){
+          try{await openConfirmationCard(r.id);}
+          catch(err){notice('Payment verified, but confirmation card could not open: '+(err.message||err),true);}
+        }
         if(typeof loadDay==='function')loadDay().catch(()=>{});
         if(typeof loadAdminCalendar==='function')loadAdminCalendar().catch(()=>{});
       }
       btn.disabled=false;
     };actions.append(btn);
   };
+  if(r.status==='confirmed'&&r.payment_verification_status==='verified'){
+    const view=document.createElement('button');view.type='button';view.className='primary';
+    view.textContent='View Confirmation Card';
+    view.onclick=async()=>{
+      view.disabled=true;
+      try{await openConfirmationCard(r.id);}
+      catch(err){notice('Cannot generate confirmation card: '+(err.message||err),true);}
+      finally{view.disabled=false;}
+    };
+    actions.append(view);
+  }
   if(isPending){
-    makeAction('Verify Payment','verify',{p_request_id:r.id},
+    makeAction('Confirm Payment','verify',{p_request_id:r.id},
        'I checked the official MariBank account and confirmed the exact payment was received.',false);
     makeAction('Cancel — Invalid Payment','cancel',{p_request_id:r.id},
        'Cancel ALL package sessions and free their hours? Do this only if payment is invalid.',true);
