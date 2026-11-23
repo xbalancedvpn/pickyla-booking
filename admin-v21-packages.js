@@ -116,7 +116,7 @@ function drawFit(ctx,str,x,y,max){
  }
  ctx.fillText(text,x,y);
 }
-function createConfirmationCard(r,slots){
+async function createConfirmationCard(r,slots){
  const players=(Array.isArray(r.participants)?r.participants:[]).map(p=>
   [p.first_name,p.last_name].filter(Boolean).join(' ').trim()).filter(Boolean);
  const count=Math.max(1,players.length);
@@ -126,23 +126,40 @@ function createConfirmationCard(r,slots){
  const sessionsHeadingY=participantEnd+55,cardsStart=sessionsHeadingY+32;
  const cardsEnd=cardsStart+slotsSorted.length*158+Math.max(0,slotsSorted.length-1)*12;
  const footerY=cardsEnd+36;
- const w=1080,h=footerY+166;
+ const w=1080,h=footerY+214;
  const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
  const ctx=canvas.getContext('2d');if(!ctx)throw Error('Your browser cannot generate the confirmation image.');
  ctx.fillStyle='#f0f3f8';ctx.fillRect(0,0,w,h);
- // Pickyla brand header
- ctx.fillStyle='#111923';ctx.fillRect(0,0,w,237);
- ctx.fillStyle='#f2c657';ctx.fillRect(0,231,w,6);
- ctx.strokeStyle='#f2c657';ctx.lineWidth=4;
- ctx.beginPath();ctx.arc(90,79,37,0,Math.PI*2);ctx.stroke();
- ctx.font='700 46px Georgia,serif';ctx.fillStyle='#f2c657';ctx.textAlign='center';
- ctx.fillText('P',90,94);ctx.textAlign='left';
- ctx.fillStyle='#ffffff';ctx.font='800 40px system-ui,sans-serif';ctx.fillText('PICKYLA',151,91);
- ctx.font='700 15px system-ui,sans-serif';ctx.fillStyle='#cbd3de';ctx.fillText('COACHING PROGRAMS',151,119);
- drawRounded(ctx,730,57,290,56,15,'#283828');
- ctx.fillStyle='#d9f5c5';ctx.font='800 21px system-ui,sans-serif';ctx.fillText('✓  PAYMENT VERIFIED',750,92);
- ctx.font='800 58px system-ui,sans-serif';ctx.fillStyle='#ffffff';ctx.fillText('BOOKING CONFIRMED',60,178);
- ctx.font='500 19px system-ui,sans-serif';ctx.fillStyle='#c9d3dc';ctx.fillText('Your coaching package is officially confirmed and ready.',62,209);
+ // Pickyla: clean ivory / yellow / charcoal, official brand logotype.
+ ctx.fillStyle='#fffbf0';ctx.fillRect(0,0,w,237);
+ ctx.fillStyle='#f2c44f';ctx.fillRect(0,231,w,6);
+ ctx.fillStyle='#171d27';
+ ctx.font='800 41px system-ui,sans-serif';
+ let logoDrawn=false;
+ try{
+   const logo=await new Promise(resolve=>{
+     const img=new Image();
+     img.onload=()=>resolve(img);
+     img.onerror=()=>resolve(null);
+     img.src='pickyla-logo-final.png';
+   });
+   if(logo?.naturalWidth){
+     const aspect=logo.naturalWidth/logo.naturalHeight;
+     const height=Math.min(89,270/aspect);
+     ctx.drawImage(logo,62,38,height*aspect,height);
+     logoDrawn=true;
+   }
+ }catch(_){}
+ if(!logoDrawn){
+   ctx.strokeStyle='#f2c44f';ctx.lineWidth=4;
+   ctx.beginPath();ctx.arc(100,78,37,0,Math.PI*2);ctx.stroke();
+   ctx.fillStyle='#151b25';ctx.font='800 48px Georgia,serif';ctx.fillText('P',83,95);
+   ctx.font='800 40px system-ui,sans-serif';ctx.fillText('PICKYLA',160,91);
+ }
+ ctx.font='700 15px system-ui,sans-serif';ctx.fillStyle='#69717c';ctx.fillText('COACHING PACKAGES • OFFICIAL CONFIRMATION',63,147);
+ drawRounded(ctx,727,51,295,57,14,'#e4f3de');
+ ctx.fillStyle='#27583b';ctx.font='800 21px system-ui,sans-serif';ctx.fillText('✓  PAYMENT VERIFIED',750,89);
+ ctx.font='800 56px system-ui,sans-serif';ctx.fillStyle='#131c2a';ctx.fillText('BOOKING CONFIRMED',60,202);
  // Package and payment summary
  drawRounded(ctx,52,261,976,244,24,'#ffffff');
  ctx.fillStyle='#758294';ctx.font='800 17px system-ui,sans-serif';ctx.fillText('PACKAGE AVAILED',83,303);
@@ -187,16 +204,19 @@ function createConfirmationCard(r,slots){
   const court=slot.court_name&&slot.court_name!=='NO COURT YET'?slot.court_name:'To be confirmed';
   drawFit(ctx,court,729,y+95,265);
  });
- // Card footer
- ctx.fillStyle='#172231';ctx.fillRect(0,footerY,w,166);
- ctx.fillStyle='#f2c657';ctx.fillRect(0,footerY,w,5);
- ctx.fillStyle='#f3d489';ctx.font='800 22px system-ui,sans-serif';ctx.fillText('OFFICIAL PICKYLA COACHING CONFIRMATION',59,footerY+46);
- ctx.fillStyle='#ffffff';ctx.font='600 17px system-ui,sans-serif';
- ctx.fillText('Please retain this card for your scheduled coaching days.',59,footerY+83);
- ctx.fillStyle='#cbd5df';ctx.font='500 15px system-ui,sans-serif';
- ctx.fillText('Court rental fees are not included. Rescheduling follows Pickyla policy.',59,footerY+113);
- ctx.fillStyle='#a7b5c2';ctx.font='600 13px system-ui,sans-serif';
- ctx.fillText('PICKYLA  •  COACH KYLA',59,footerY+144);
+ // Light Pickyla card footer and required developer credits.
+ ctx.fillStyle='#fff7df';ctx.fillRect(0,footerY,w,214);
+ ctx.fillStyle='#efbd28';ctx.fillRect(0,footerY,w,5);
+ ctx.fillStyle='#171d26';ctx.font='800 22px system-ui,sans-serif';
+ ctx.fillText('OFFICIAL PICKYLA COACHING CONFIRMATION',59,footerY+43);
+ ctx.fillStyle='#455162';ctx.font='600 17px system-ui,sans-serif';
+ ctx.fillText('Please retain this card for your scheduled coaching days.',59,footerY+80);
+ ctx.fillStyle='#596475';ctx.font='500 15px system-ui,sans-serif';
+ ctx.fillText('Court rental fees are not included. Rescheduling follows Pickyla policy.',59,footerY+107);
+ ctx.fillStyle='#293544';ctx.font='800 15px system-ui,sans-serif';
+ ctx.fillText('©2026 XBALANCED DIGITAL SOLUTIONS',59,footerY+154);
+ ctx.fillStyle='#6e7783';ctx.font='600 14px system-ui,sans-serif';
+ ctx.fillText('Developed by ELDWIN GASPAR',59,footerY+177);
  const summary=[
   'PICKYLA — BOOKING CONFIRMED / PAYMENT VERIFIED',
   'Booking reference: '+r.reference,
@@ -224,7 +244,7 @@ async function openConfirmationCard(requestId){
  if(se)throw se;
  if(!slots?.length||slots.some(x=>!x.booking_id))
   throw Error('Unable to load the complete confirmed coaching schedule.');
- latestCard=createConfirmationCard(r,slots);
+ latestCard=await createConfirmationCard(r,slots);
  $('pkgV22CardImage').src=latestCard.image;
  if(!cardDialog.open)cardDialog.showModal();
 }
@@ -250,7 +270,7 @@ async function requests(){
   const client=r.participants?.[0]||{};
   const isActive=['held','payment_reported'].includes(r.status)&&new Date(r.hold_until)>new Date();
   const isPending=r.status==='confirmed'&&r.payment_verification_status==='pending'&&!!r.payment_proof_path;
-  const row=document.createElement('article');row.className='pkg-v21-request';
+  const row=document.createElement('article');row.className='pkg-v21-request';row.dataset.packageRequestId=r.id;
   const statusText=r.status==='confirmed'?
     (r.payment_verification_status==='verified'?'Booked / Paid — Verified':'Booked — Payment Verification Pending'):
     r.status.replace(/_/g,' ');
@@ -374,11 +394,21 @@ reminderBox?.appendChild(bellSection);
 new MutationObserver(()=>{
   if(bellSection.parentElement!==reminderBox)reminderBox?.append(bellSection);
 }).observe(reminderBox||document.body,{childList:true});
+let notificationLoadVersion=0;
+async function markPackageNotificationRead(notificationId,userId){
+ const {error}=await db.from('program_booking_notification_reads')
+   .upsert({notification_id:notificationId,user_id:userId},
+     {onConflict:'notification_id,user_id',ignoreDuplicates:true});
+ if(error)throw error;
+}
 async function loadPackageNotifications(){
+ const version=++notificationLoadVersion;
  const {data:sessionInfo}=await db.auth.getSession();
+ if(version!==notificationLoadVersion)return;
  const userId=sessionInfo?.session?.user?.id;if(!userId)return;
  const {data:items,error}=await db.from('program_booking_notifications')
   .select('id,request_id,created_at').order('created_at',{ascending:false}).limit(100);
+ if(version!==notificationLoadVersion)return;
  if(error){notice('Package notifications: '+error.message,true);return;}
  if(!items?.length){
    badge.hidden=true;$('pkgV22Unread').textContent='0';
@@ -387,16 +417,19 @@ async function loadPackageNotifications(){
  const ids=items.map(x=>x.id);
  const {data:reads,error:re}=await db.from('program_booking_notification_reads')
    .select('notification_id').in('notification_id',ids).eq('user_id',userId);
+ if(version!==notificationLoadVersion)return;
  if(re){notice(re.message,true);return;}
  const readIds=new Set((reads||[]).map(x=>x.notification_id));
  const unread=items.filter(x=>!readIds.has(x.id));
  badge.textContent=String(unread.length);badge.hidden=unread.length===0;
  $('pkgV22Unread').textContent=String(unread.length);
- const el=$('pkgV22BellItems');el.innerHTML='';
+ const el=$('pkgV22BellItems');
  if(!unread.length){el.textContent='All package notifications have been read.';return;}
  const {data:packages,error:pe}=await db.from('program_package_requests')
     .select('id,reference,program_name,price_amount,participants,status').in('id',unread.map(x=>x.request_id));
+ if(version!==notificationLoadVersion)return;
  if(pe){notice(pe.message,true);return;}
+ const fragment=document.createDocumentFragment();
  const byId=new Map((packages||[]).map(x=>[x.id,x]));
  for(const item of unread){
   const r=byId.get(item.request_id)||{};
@@ -408,16 +441,30 @@ async function loadPackageNotifications(){
   const btn=document.createElement('button');btn.type='button';btn.className='secondary';btn.textContent='Mark Read';
   btn.onclick=async()=>{
     btn.disabled=true;
-    const {error}=await db.from('program_booking_notification_reads')
-      .insert({notification_id:item.id,user_id:userId});
-    if(error)notice(error.message,true);
-    else await loadPackageNotifications();
+    try{await markPackageNotificationRead(item.id,userId);await loadPackageNotifications();}
+    catch(err){notice(err.message||'Could not mark notification as read.',true);}
     btn.disabled=false;
   };
   const open=document.createElement('button');open.type='button';open.className='secondary';open.textContent='View Booking';
-  open.onclick=()=>{reminderDialog?.close();$('pkgV21Admin')?.scrollIntoView({behavior:'smooth',block:'start'});};
-  row.append(btn,open);el.append(row);
+  open.onclick=async()=>{
+    open.disabled=true;
+    try{
+      // Viewing a booking is acknowledgment: clear it for this admin automatically.
+      await markPackageNotificationRead(item.id,userId);
+      await requests();
+      await loadPackageNotifications();
+      reminderDialog?.close();
+      const target=document.querySelector('#pkgV21Requests [data-package-request-id="'+item.request_id+'"]')
+        ||$('pkgV21Admin');
+      target?.scrollIntoView({behavior:'smooth',block:'start'});
+      target?.classList.add('pkg-v22-booking-opened');
+      setTimeout(()=>target?.classList.remove('pkg-v22-booking-opened'),2400);
+    }catch(err){notice('Could not open this booking: '+(err.message||err),true);}
+    finally{open.disabled=false;}
+  };
+  row.append(btn,open);fragment.append(row);
  }
+ if(version===notificationLoadVersion)el.replaceChildren(fragment);
 }
 bellButton?.addEventListener('click',()=>setTimeout(loadPackageNotifications,0));
 $('refreshAdminReminder')?.addEventListener('click',()=>setTimeout(loadPackageNotifications,0));
