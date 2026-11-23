@@ -25,7 +25,7 @@
       '<div class="pkg-v21-meta" id="pkgV21Meta"></div>'+
       '<h3>1. Select coaching format</h3><div id="pkgV21Types" class="pkg-v21-types"></div>'+
       '<label id="pkgV21GroupWrap" class="hidden">Number of group players <select id="pkgV21GroupCount"></select></label>'+
-      '<h3>2. Schedule every session</h3><p class="pkg-v21-small" id="pkgV21WindowHelp">First session sets the 14-day booking window. Every session needs consecutive hours.</p>'+
+      '<h3>2. Schedule and choose courts</h3><p class="pkg-v21-small" id="pkgV21WindowHelp">First session sets the 14-day booking window. Choose consecutive hours and court venue for every day.</p>'+
       '<div id="pkgV21Sessions"></div>'+
       '<h3>3. Participant names</h3><p class="pkg-v21-small">Enter the first and last name of every participant. Contact for Player 1 helps Kyla verify payment.</p>'+
       '<div id="pkgV21Players"></div>'+
@@ -43,15 +43,16 @@
       '<p class="pkg-v21-small">Message Coach Kyla directly. Sending an inquiry does not hold the selected dates or confirm a package.</p>'+
     '</div>'+
     '<div id="pkgV21Payment" class="hidden">'+
-      '<h3>Bank QR payment</h3><p class="pkg-v21-small">Pay the exact amount, save a screenshot of the successful transfer, and send it through Messenger for verification.</p>'+
+      '<h3>Bank QR payment</h3><p class="pkg-v21-small">Pay the full amount using the QR, then upload a screenshot of the successful payment. All 3 coaching days are automatically booked when the proof is uploaded successfully — Coach Kyla will check the payment afterward.</p>'+
       '<div class="pkg-v21-payment-meta"><span>Booking reference</span><strong id="pkgV21Ref"></strong><span>Amount to send</span><strong id="pkgV21Amount"></strong><small id="pkgV21Expiry"></small></div>'+
       '<div class="pkg-v21-qr"><img id="pkgV21Qr" alt="Official Pickyla bank payment QR" referrerpolicy="no-referrer"></div>'+
       '<button type="button" id="pkgV21SaveQr" class="pkg-v21-secondary">Open / Save Bank QR Image</button>'+
       '<p id="pkgV21Bank" class="pkg-v21-bank"></p>'+
       '<button type="button" id="pkgV21Copy" class="pkg-v21-secondary">Copy booking/payment details</button>'+
-      '<button type="button" id="pkgV21Messenger" class="pkg-v21-secondary">Open Coach Kyla Facebook to send screenshot</button>'+
-      '<button type="button" id="pkgV21Proof" class="pkg-v21-main">I have sent my payment proof</button>'+
-      '<p class="pkg-v21-small">Booking is not confirmed until Kyla verifies receipt. Do not pay a second time without checking with Kyla.</p>'+
+      '<label class="pkg-v21-proof-label" for="pkgV21ProofFile">Upload screenshot of successful bank transfer (JPG, PNG or WebP • max 3 MB)<input type="file" id="pkgV21ProofFile" accept="image/jpeg,image/png,image/webp" required></label>'+
+      '<button type="button" id="pkgV21Messenger" class="pkg-v21-secondary">Contact Coach Kyla on Facebook (optional)</button>'+
+      '<button type="button" id="pkgV21Proof" class="pkg-v21-main">Upload Proof & Book All Sessions</button>'+
+      '<p class="pkg-v21-small">When the upload succeeds, your selected slots are booked immediately. Payment verification remains pending, and an invalid payment may result in cancellation. Do not transfer a second time without contacting Coach Kyla.</p>'+
     '</div>'+
     '<div id="pkgV21Done" class="hidden"><h3 id="pkgV21DoneTitle">Payment verification pending</h3><p id="pkgV21DoneText"></p><div id="pkgV21StatusSessions"></div><button type="button" id="pkgV21Link" class="pkg-v21-secondary">Copy My Program link</button><div id="pkgV21Reschedule" class="hidden"><h3>Request a reschedule</h3><p class="pkg-v21-small">Please request at least 24 hours before your coaching time. Minimum notice is 12 hours; requests require Kyla\'s approval. Only dates within your original 14-day package window can be selected.</p><label>Which session?<select id="pkgV21ResSession"></select></label><label>New date<input id="pkgV21ResDate" type="date"></label><label>New start time<select id="pkgV21ResHour"></select></label><label>Reason<textarea id="pkgV21ResReason" rows="2" maxlength="500" placeholder="Brief reason (optional)"></textarea></label><button type="button" id="pkgV21ResSend" class="pkg-v21-secondary">Send Reschedule Request</button></div></div>'+
   '</section>';
@@ -60,6 +61,8 @@
   root.addEventListener('click',e=>{if(e.target===root)P('pkgV21Close').click();});
   function notice(text,isError){const el=P('pkgV21Notice');el.textContent=text||'';el.classList.toggle('hidden',!text);el.classList.toggle('error',!!isError);}
   function show(stage){for(const key of ['Form','Preview','Payment','Done'])P('pkgV21'+key).classList.toggle('hidden',key!==stage);root.classList.remove('hidden');document.body.classList.add('pkg-v21-scrolllock');P('pkgV21Close').focus();}
+  const COURTS=['NO COURT YET','NANOMOLY','DINK VALLEY','HC SANTIAGO','CASA PLAY','COURTYARD','OTHERS'];
+  const courtFor=s=>s?.court==='OTHERS'?'OTHERS: '+String(s?.otherCourt||'').trim().replace(/\s+/g,' ').slice(0,95):(s?.court||'NO COURT YET');
   function checkoutEnabled(){return !!(state.program?.package_booking_enabled&&state.settings&&state.settings.enabled&&state.settings.qr_image_url&&state.settings.account_name&&state.settings.bank_name&&state.settings.messenger_url);}
   function priceFor(){const p=state.program;if(!p)return 0;const extra=p.package_format==='group'?Math.max(0,headcount()-Number(p.package_min_participants||4))*Number(p.package_additional_player_price||0):0;return Number(p.fixed_price||0)+extra;}
   function headcount(){return state.type==='one'?1:state.type==='duo'?2:state.count;}
@@ -120,7 +123,7 @@
     P('pkgV21WindowHelp').textContent=first?'Your 14-day booking window: '+nice(first)+' to '+nice(last)+'. Select one session per day, in order.':'Choose Session 1 first to set the 14-day window. Select consecutive hours for each session.';
     const titles=(state.program.sessions||[]);
     P('pkgV21Sessions').innerHTML=Array.from({length:count},(_,i)=>{
-      const s=state.sessions[i]||{date:'',start:null},prev=state.sessions[i-1];
+      const s=state.sessions[i]||{date:'',start:null,court:'NO COURT YET',otherCourt:''},prev=state.sessions[i-1];
       const dateMin=i===0?today():(prev?.date?addDays(prev.date,1):first||today());
       const dateMax=i===0?maxDate:last;
       const starts=validStarts(s.date);
@@ -131,17 +134,29 @@
       return '<div class="pkg-v21-session"><strong>Session '+(i+1)+(t?' • '+esc(t.title):'')+'</strong><div class="pkg-v21-session-fields">'+
         '<label>Day<input data-session-date="'+i+'" type="date" min="'+dateMin+'" max="'+dateMax+'" value="'+esc(s.date)+'" '+(i>0&&!first?'disabled':'')+'></label>'+
         '<label>Time<select data-session-start="'+i+'" '+(!s.date?'disabled':'')+'>'+options+'</select></label></div>'+
+        '<div class="pkg-v21-court-fields"><label>Court venue<select data-session-court="'+i+'">'+COURTS.map(c=>'<option value="'+esc(c)+'" '+((s.court||'NO COURT YET')===c?'selected':'')+'>'+esc(c)+'</option>').join('')+'</select></label>'+
+        '<label class="'+(s.court==='OTHERS'?'':'hidden')+'" data-session-other-wrap="'+i+'">Specify other court<input type="text" data-session-other="'+i+'" maxlength="95" placeholder="Court name" value="'+esc(s.otherCourt||'')+'"></label></div>'+
         (s.date&&!starts.length?'<small class="pkg-v21-warning">No consecutive '+esc(state.program.session_duration_hours)+'-hour slot on this day.</small>':'')+
         '</div>';
     }).join('');
     P('pkgV21Sessions').querySelectorAll('[data-session-date]').forEach(el=>el.onchange=async()=>{
       const i=Number(el.dataset.sessionDate),date=el.value;
-      const oldFirst=state.sessions[0]?.date;state.sessions[i]={date,start:null};
+      const oldFirst=state.sessions[0]?.date;state.sessions[i]={...state.sessions[i],date,start:null,court:state.sessions[i]?.court||'NO COURT YET'};
       if(i===0&&date!==oldFirst){for(let j=1;j<count;j++)state.sessions[j]={date:'',start:null};state.availability.clear();}
       if(i>0){for(let j=i+1;j<count;j++)state.sessions[j]={date:'',start:null};}
       try{if(i===0&&date)await loadAvailability();notice('');}
       catch(err){notice('Could not refresh available times. '+(err.message||err),true);}
       renderSessions();checkReady();
+    });
+    P('pkgV21Sessions').querySelectorAll('[data-session-court]').forEach(el=>el.onchange=()=>{
+      const i=Number(el.dataset.sessionCourt);
+      state.sessions[i].court=el.value;
+      P('pkgV21Sessions').querySelector('[data-session-other-wrap="'+i+'"]').classList.toggle('hidden',el.value!=='OTHERS');
+      checkReady();
+    });
+    P('pkgV21Sessions').querySelectorAll('[data-session-other]').forEach(el=>el.oninput=()=>{
+      state.sessions[Number(el.dataset.sessionOther)].otherCourt=el.value;
+      checkReady();
     });
     P('pkgV21Sessions').querySelectorAll('[data-session-start]').forEach(el=>el.onchange=()=>{
       const i=Number(el.dataset.sessionStart);
@@ -158,11 +173,13 @@
     const scheduleValid=dates.length===count&&unique.size===count&&state.sessions.every(s=>s&&s.date&&Number.isInteger(s.start)&&validStarts(s.date).includes(s.start));
     const players=savedPlayers();
     const namesValid=players.length===headcount()&&players.every(p=>p.first_name&&p.last_name&&p.first_name.length<=60&&p.last_name.length<=80)&&!!players[0]?.contact;
-    const valid=scheduleValid&&namesValid&&state.price>0&&Number.isInteger(duration);
+    const courtsValid=state.sessions.every(s=>COURTS.includes(s.court||'NO COURT YET')&&
+      (s.court!=='OTHERS'||(String(s.otherCourt||'').trim().length>=2)));
+    const valid=scheduleValid&&namesValid&&courtsValid&&state.price>0&&Number.isInteger(duration);
     btn.disabled=!valid||state.loading;
     btn.textContent=checkoutEnabled()?'Reserve schedules & proceed to payment':'Review My Promo Schedule';
     P('pkgV21ReserveHelp').textContent=checkoutEnabled()?
-      'Your selected hours will be held for 30 minutes when you proceed to bank payment. Confirmation follows payment verification.':
+      'Your selected hours will be held for 30 minutes during payment. Once you upload the successful bank transfer screenshot, all sessions are booked immediately while Coach Kyla verifies payment.':
       'Preview only: you can plan all 3 coaching dates and contact Coach Kyla. No slots are reserved and no payment is collected here.';
     return valid;
   }
@@ -182,7 +199,7 @@
       const p=prog.data;
       if(!Number.isInteger(Number(p.session_duration_hours))||p.session_count>14||p.session_count<1)throw new Error('This program needs an admin schedule configuration before online booking.');
       state.program={...p,sessions:sessions.data||[]};state.settings=!sett.error&&Array.isArray(sett.data)?sett.data[0]||null:null;
-      state.type=p.package_format;state.count=p.package_min_participants;state.sessions=Array.from({length:p.session_count},()=>({date:'',start:null}));state.participants=[];
+      state.type=p.package_format;state.count=p.package_min_participants;state.sessions=Array.from({length:p.session_count},()=>({date:'',start:null,court:'NO COURT YET',otherCourt:''}));state.participants=[];
       P('pkgV21Meta').textContent=p.session_count+' sessions • '+p.session_duration_hours+' consecutive hours each • 14 calendar days';
       renderTypes();renderSessions();renderPlayers();renderTotal();
       if(!checkoutEnabled())notice('Promo schedule preview is available! Choose your dates and participants, then review your plan. No payment or reservation will be made yet.');
@@ -195,7 +212,7 @@
       await loadAvailability();
       if(!checkReady())throw new Error('An hour is no longer available. Please choose another schedule.');
       const participants=savedPlayers(),duration=Number(state.program.session_duration_hours);
-      const sessions=state.sessions.map(s=>({date:s.date,start_hour:s.start,end_hour:s.start+duration}));
+      const sessions=state.sessions.map(s=>({date:s.date,start_hour:s.start,end_hour:s.start+duration,court_name:courtFor(s)}));
       const {data,error}=await db.rpc('reserve_program_package_v21',{p_program_id:state.program.id,p_format:state.type,p_sessions:sessions,p_participants:participants});
       if(error)throw error;
       state.reference=data.reference;state.token=data.access_token;state.price=Number(data.amount);state.holdUntil=data.hold_until;
@@ -211,7 +228,7 @@
   function paymentText(){
     if(!state.reference)return '';
     const players=savedPlayers(),duration=Number(state.program.session_duration_hours);
-    return ['PICKYLA SESSION PROGRAM','Reference: '+state.reference,'Program: '+state.program.name,'Coaching: '+state.type.toUpperCase(),'Players: '+headcount(),'Participants: '+players.map(p=>p.first_name+' '+p.last_name).join(', '),'Sessions:',...state.sessions.map((s,i)=>(i+1)+'. '+nice(s.date)+' • '+hour(s.start)+' – '+hour(s.start+duration)),'Full package payment: '+money(state.price),'Payment proof: Please see attached bank transfer screenshot.'].join('\n');
+    return ['PICKYLA SESSION PROGRAM','Reference: '+state.reference,'Program: '+state.program.name,'Coaching: '+state.type.toUpperCase(),'Players: '+headcount(),'Participants: '+players.map(p=>p.first_name+' '+p.last_name).join(', '),'Sessions:',...state.sessions.map((s,i)=>(i+1)+'. '+nice(s.date)+' • '+hour(s.start)+' – '+hour(s.start+duration)+' • '+courtFor(s)),'Full package payment: '+money(state.price),'Payment proof: Please see attached bank transfer screenshot.'].join('\n');
   }
   async function copyText(text){try{await navigator.clipboard.writeText(text);notice('Details copied. Paste them into your Messenger chat.');}catch(_){notice('Clipboard permission is unavailable. Please copy the details manually.',true);}}
   function previewMessage(){
@@ -224,7 +241,7 @@
       'Participants ('+headcount()+'): '+participants.map(p=>p.first_name+' '+p.last_name).join(', '),
       'Contact: '+(participants[0]?.contact||''),
       'Requested coaching dates:',
-      ...state.sessions.map((x,i)=>(i+1)+'. '+nice(x.date)+' | '+hour(x.start)+' to '+hour(x.start+duration)),
+      ...state.sessions.map((x,i)=>(i+1)+'. '+nice(x.date)+' | '+hour(x.start)+' to '+hour(x.start+duration)+' | Court: '+courtFor(x)),
       'Total: '+money(state.price)+' for '+state.sessions.length*duration+' coaching hours (court fee excluded).',
       'Please confirm availability and official booking/payment instructions.'
     ].join('\n');
@@ -261,15 +278,31 @@
   }
   P('pkgV21Link').onclick=()=>copyText(trackingLink());
   P('pkgV21Proof').onclick=async()=>{
-    const btn=P('pkgV21Proof');btn.disabled=true;notice('Updating payment status…');
+    const btn=P('pkgV21Proof'),file=P('pkgV21ProofFile').files[0];
+    if(!state.reference||!state.token)return notice('Please reserve your package schedule first.',true);
+    if(!file)return notice('Choose a screenshot of the successful bank transfer.',true);
+    if(!['image/png','image/jpeg','image/webp'].includes(file.type))return notice('Choose a PNG, JPG or WebP screenshot.',true);
+    if(file.size<100||file.size>3145728)return notice('Payment screenshot must be under 3 MB.',true);
+    if(state.loading)return;
+    state.loading=true;btn.disabled=true;btn.textContent='Uploading payment proof…';
+    const extension={'image/png':'png','image/jpeg':'jpg','image/webp':'webp'}[file.type];
+    const key=state.reference+'/'+state.token+'.'+extension;
     try{
-      const {data,error}=await db.rpc('submit_program_payment_proof_v21',{p_reference:state.reference,p_access_token:state.token});
+      if(Date.now()>=new Date(state.holdUntil).getTime())throw Error('This 30-minute hold has expired. Please contact Coach Kyla if payment was already sent.');
+      const upload=await db.storage.from('pickyla-package-proofs').upload(key,file,{contentType:file.type,upsert:false,cacheControl:'0'});
+      if(upload.error)throw upload.error;
+      btn.textContent='Booking all coaching days…';
+      const {data,error}=await db.rpc('finalize_program_proof_v22',{
+        p_reference:state.reference,p_access_token:state.token,p_proof_path:key
+      });
       if(error)throw error;
-      notice('');P('pkgV21DoneTitle').textContent='Awaiting bank payment verification';
-      P('pkgV21DoneText').textContent='Your schedule is held pending Kyla’s verification. Reference '+state.reference+'. Save your My Program link to track your booking.';
-      P('pkgV21StatusSessions').textContent=state.sessions.map((s,i)=>'Session '+(i+1)+': '+nice(s.date)+' • '+hour(s.start)).join(' | ');
+      notice('');
+      P('pkgV21DoneTitle').textContent='All Sessions Booked!';
+      P('pkgV21DoneText').textContent='Your '+state.program.name+' has been booked immediately. Coach Kyla was notified. Payment verification is pending. Reference: '+state.reference+'. Keep your private My Program link.';
+      P('pkgV21StatusSessions').textContent=state.sessions.map((x,i)=>'Session '+(i+1)+': '+nice(x.date)+' • '+hour(x.start)+'–'+hour(x.start+Number(state.program.session_duration_hours))+' • Court: '+courtFor(x)).join('\n');
       show('Done');
-    }catch(err){notice(err.message||String(err),true);btn.disabled=false;}
+    }catch(err){notice((err.message||String(err))+' If the screenshot was uploaded but booking failed, contact Coach Kyla and do not pay twice.',true);btn.disabled=false;}
+    finally{state.loading=false;btn.textContent='Upload Proof & Book All Sessions';}
   };
   P('pkgV21ResSend').onclick=async()=>{
     const btn=P('pkgV21ResSend'),n=Number(P('pkgV21ResSession').value),d=P('pkgV21ResDate').value,h=Number(P('pkgV21ResHour').value);
@@ -293,8 +326,8 @@
     if(error){notice('This private program link cannot be verified.',true);return;}
     notice('');
     P('pkgV21DoneTitle').textContent='Package status: '+String(data.status||'pending').replace(/_/g,' ');
-    P('pkgV21DoneText').textContent=(data.program_name||'Program')+' • '+money(data.amount)+' • Booking reference '+reference;
-    P('pkgV21StatusSessions').textContent=(data.sessions||[]).map(s=>'Session '+s.session_number+': '+nice(s.slot_date)+' • '+hour(s.start_hour)+' – '+hour(s.end_hour)).join(' | ');
+    P('pkgV21DoneText').textContent=(data.program_name||'Program')+' • '+money(data.amount)+' • Reference '+reference+' • Payment: '+(data.payment_verification==='verified'?'Verified':data.payment_verification==='rejected'?'Rejected — booking cancelled':'Verification pending');
+    P('pkgV21StatusSessions').textContent=(data.sessions||[]).map(s=>'Session '+s.session_number+': '+nice(s.slot_date)+' • '+hour(s.start_hour)+' – '+hour(s.end_hour)+' • Court: '+(s.court_name||'NO COURT YET')).join('\n');
     const box=P('pkgV21Reschedule');box.classList.toggle('hidden',data.status!=='confirmed');
     if(data.status==='confirmed'){
       const entries=data.sessions||[],start=data.window_start||entries[0]?.slot_date;
