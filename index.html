@@ -21,6 +21,7 @@
   <link rel="stylesheet" href="public-v20-gallery.css?v=20gallery1">
   <link rel="stylesheet" href="v20-weeknav.css?v=20week1">
   <link rel="stylesheet" href="public-v20-turnover.css?v=20turn2">
+  <link rel="stylesheet" href="public-v21-promos.css?v=21promo1">
 
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
@@ -35,7 +36,7 @@
     <span class="v20-public-title"><strong>PICKYLA BOOKING</strong><small>Coaching Schedule & Reservations</small></span>
   </a>
   <nav id="mainNav" class="main-nav">
-    <a href="#home" data-public-tab="home">Home</a><a href="#about" data-public-tab="about">Coach</a><a href="#improve" data-public-tab="improve">Find My Coaching</a><a href="#programs" data-public-tab="programs">Programs</a><a href="#rates" data-public-tab="rates">Rates</a><a href="#gallerySection" data-public-tab="gallerySection">Gallery</a><a href="#testimonialsSection" data-public-tab="testimonialsSection">Testimonials</a><a href="#howBooking" data-public-tab="howBooking">How It Works</a><a href="#booking" data-public-tab="booking">Book</a><a href="#contact" data-public-tab="contact">Contact</a>
+    <a href="#home" data-public-tab="home">Home</a><a href="#about" data-public-tab="about">Coach</a><a href="#improve" data-public-tab="improve">Find My Coaching</a><a href="#programs" data-public-tab="programs">Promos</a><a href="#rates" data-public-tab="rates">Rates</a><a href="#gallerySection" data-public-tab="gallerySection">Gallery</a><a href="#testimonialsSection" data-public-tab="testimonialsSection">Testimonials</a><a href="#howBooking" data-public-tab="howBooking">How It Works</a><a href="#booking" data-public-tab="booking">Book</a><a href="#contact" data-public-tab="contact">Contact</a>
   </nav>
   <div class="nav-actions">
     <button id="weekPreviewBtn" class="week-top-btn" type="button" aria-label="Preview this week's schedule" title="Preview this week's schedule">▦ <span>Week</span></button>
@@ -56,6 +57,7 @@
       <div class="quote-card"><span id="heroQuoteLabel">COURT NOTE</span><blockquote id="heroQuote"></blockquote></div>
       <div id="liveAvailabilityBadge" class="live-availability-badge"><span class="pulse-dot"></span><strong>Checking live availability…</strong></div>
       <div class="hero-actions"><a class="btn primary" href="#improve">Find My Coaching</a><a class="btn ghost" href="#booking">View Schedule</a></div>
+      <a class="pickyla-promo-hero-link" href="#programs" aria-label="Explore 5 plus 1 coaching hours promo"><span class="pickyla-promo-hero-star" aria-hidden="true">✦</span><span><strong>5+1 COACHING HOURS PROMO</strong><small>Get 1 coaching hour FREE • Explore packages</small></span><span class="pickyla-promo-hero-arrow" aria-hidden="true">↗</span></a>
     </div>
   </section>
 
@@ -85,9 +87,27 @@
     </div>
   </section>
 
-  <section class="programs section" id="programs">
-    <div class="section-heading"><span class="eyebrow">STRUCTURED COACHING</span><h2>Programs with a clear goal.</h2><p>Multi-session packages can follow a planned development path. Each active program shows the overall target and the goal of every session.</p></div>
-    <div id="publicProgramGrid" class="public-program-grid"><div class="public-loading">Loading coaching programs…</div></div>
+  <section class="programs section pickyla-promo-section" id="programs" aria-labelledby="pickylaPromoTitle">
+    <div class="pickyla-promo-spotlight">
+      <div class="pickyla-promo-intro">
+        <span class="pickyla-promo-exclusive"><span aria-hidden="true">✦</span> PICKYLA COACHING PROMOS <span class="pickyla-promo-exclusive-dot" aria-hidden="true"></span> 5+1 OFFER</span>
+        <h2 id="pickylaPromoTitle">TRAIN MORE.<br><em>SAVE MORE.</em></h2>
+        <p class="pickyla-promo-subtitle">Pay for <strong>5 coaching hours</strong>, get <strong>1 hour FREE!</strong> Complete your 6-hour package in 3 training days, with 2 consecutive hours per day.</p>
+        <a class="pickyla-promo-explore" href="#publicProgramGrid">EXPLORE PROMO PACKAGES <span aria-hidden="true">↓</span></a>
+      </div>
+      <div class="pickyla-promo-highlights" aria-label="Promo package schedule">
+        <div class="pickyla-promo-highlight"><strong>6<span>HRS</span></strong><small>TOTAL TRAINING</small></div>
+        <div class="pickyla-promo-highlight"><strong>3<span>DAYS</span></strong><small>2 HOURS EACH</small></div>
+        <div class="pickyla-promo-highlight"><strong>14<span>DAYS</span></strong><small>BOOKING WINDOW</small></div>
+        <div class="pickyla-promo-highlight-note"><span aria-hidden="true">★</span> 1 FREE coaching hour included</div>
+      </div>
+    </div>
+    <div class="pickyla-promo-list-heading">
+      <div><span class="pickyla-promo-eyebrow">CHOOSE YOUR 5+1 DEAL</span><h3>One promo. Three ways to train.</h3><p>Pick a private, duo, or group package. Promo prices cover all 6 coaching hours.</p></div>
+      <a href="#rates" class="pickyla-promo-regular-link">Just need one session? See regular rates ↗</a>
+    </div>
+    <div id="publicProgramGrid" class="public-program-grid pickyla-promo-card-grid" aria-label="Pickyla coaching promo packages"><div class="public-loading">Loading Pickyla coaching promos…</div></div>
+    <div class="pickyla-promo-terms"><span>✓ Full payment upfront</span><span>✓ Reschedule at least 12 hours ahead (24 recommended)</span><span>✓ No-show uses a session</span><span>✓ Court fee not included</span></div>
   </section>
 
   <section class="rates section" id="rates">
@@ -233,7 +253,7 @@
 
 <div id="copyToast" class="copy-toast">Booking details copied!</div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="script.js?v=17e"></script>
+<script src="script.js?v=21promo1"></script>
 <script src="v17f.js?v=17f"></script>
 <script src="v17g.js?v=17g"></script>
 <script src="public-v20-booking.js?v=20book1"></script>
