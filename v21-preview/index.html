@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#111c25">
+<title>Pickyla v21 | Session Programs Test Preview</title>
+<style>
+:root{--ink:#142231;--gold:#d8aa53;--gold-light:#f7e9cd;--muted:#71808c;--line:#dfe5ea;--bg:#f5f6f8;--good:#196d4e;--warn:#a16018}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);font-size:14px;line-height:1.5}button,input,select{font:inherit}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.45}.hidden{display:none!important}
+.top{background:var(--ink);color:white;padding:18px max(22px,calc((100vw - 1120px)/2));display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px}.monogram{width:42px;height:42px;border:2px solid var(--gold);border-radius:50%;display:grid;place-items:center;font-family:Georgia,serif;font-size:25px;color:var(--gold)}.brand strong{letter-spacing:.12em;font-size:15px}.brand small{display:block;color:#cbd1d7;font-size:10px;letter-spacing:.14em;font-weight:700}
+.topnav{display:flex;gap:7px;flex-wrap:wrap}.navbtn{border:1px solid #52606c;background:transparent;color:#f0f3f6;border-radius:9px;padding:9px 14px;font-weight:700;font-size:12px}.navbtn.active{background:var(--gold);color:#1a2430;border-color:var(--gold)}
+.warning{background:#fff5e2;color:#6b4308;border-bottom:1px solid #eac78b;padding:11px 18px;text-align:center;font-size:12px;font-weight:700}
+.wrap{max-width:1160px;margin:auto;padding:35px 18px 60px}.hero{display:flex;align-items:end;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:25px}
+.eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.18em;font-weight:800;color:#a57e38}h1{font-family:Georgia,serif;font-size:clamp(31px,5vw,48px);margin:5px 0;letter-spacing:-.04em;line-height:1.07;font-weight:600}h2{font-size:20px;margin:0 0 7px}h3{font-size:14px;margin:0 0 10px}.hero p{color:var(--muted);margin:10px 0 0;max-width:610px}
+.chips{display:flex;gap:7px;flex-wrap:wrap}.chip{border:1px solid #d9e1e7;border-radius:50px;font-size:11px;padding:7px 12px;background:white;color:#536577;font-weight:700}
+.columns{display:grid;grid-template-columns:330px minmax(0,1fr);gap:18px;align-items:start}.panel{background:white;border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 3px 16px #14223105}
+.pill{display:inline-block;padding:4px 9px;border-radius:6px;background:var(--gold-light);color:#70501a;font-size:10px;font-weight:800;letter-spacing:.03em}
+.program{display:block;text-align:left;background:white;border:1px solid var(--line);border-radius:13px;padding:15px;width:100%;margin:12px 0;transition:.15s}.program:hover,.program.active{border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold)}.program.active{background:#fffcf5}
+.program b{font-size:14px;display:block}.program .price{font-family:Georgia,serif;font-size:24px;color:#84601e;margin:9px 0 3px}.program small{display:block;color:#617180;line-height:1.5}.program .meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}.program .meta span{background:#eef1f5;padding:4px 7px;border-radius:5px;font-size:10px;color:#526475;font-weight:700}
+.flow-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}.step{font-size:11px;color:#a47a36;font-weight:800;letter-spacing:.12em}
+.section{border-top:1px solid var(--line);margin-top:20px;padding-top:20px}.section p,.note{color:var(--muted);font-size:12px}.section p{margin-top:0}.choice{padding:13px;background:#f6f8fa;border-radius:11px;color:#435468;margin-top:12px;font-size:13px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{display:grid;gap:6px;margin:5px 0;font-size:12px;font-weight:700;color:#536372}.field input,.field select{width:100%;min-width:0;border-radius:10px;border:1px solid #dce2e7;padding:12px 10px;background:white;color:#203448;font-size:13px}.field input:focus,.field select:focus{outline:2px solid var(--gold);outline-offset:1px}
+.session{border:1px solid var(--line);border-radius:12px;padding:14px;margin:10px 0;background:#fcfdff}.session-head{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12px;font-weight:800;margin-bottom:10px}.session-head small{font-size:10px;font-weight:700;color:#9c833e}.session-head .chosen{color:var(--good)}
+.state{background:#edf6f2;color:#1d6c51;font-weight:700;padding:11px 13px;border-radius:9px;margin:14px 0;font-size:12px}.state.warn{background:#fff0e6;color:#a85627}.range{font-size:12px;font-weight:750;color:#886321;background:#fff8e9;padding:10px 13px;border-radius:9px;margin:12px 0}
+.player{border:1px solid var(--line);padding:12px;border-radius:12px;margin-bottom:9px}.player b{font-size:12px;display:block;margin-bottom:9px}
+.total{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding-top:18px;margin-top:20px;gap:12px}.total span{font-size:12px;color:#667786;font-weight:700}.total strong{font-family:Georgia,serif;font-size:28px;color:#786029}
+.btn{border:0;border-radius:10px;background:var(--ink);color:white;padding:13px 17px;font-size:13px;font-weight:800}.btn.gold{background:#d6a044;color:#152331}.btn.ghost{background:#eef1f4;color:#233447}.btn.wide{width:100%;margin-top:14px}.btn:focus-visible,.program:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.payment-top{border:1px solid #ead8b6;background:#fffaf0;padding:15px;border-radius:13px;display:grid;gap:4px}.payment-top span{font-size:12px;color:#886d42}.payment-top strong{font-family:Georgia,serif;font-size:30px;color:#805a20}.payment-top b{font-size:13px}.qr-placeholder{width:220px;height:220px;margin:20px auto;background:repeating-linear-gradient(45deg,#e7edf3 0,#e7edf3 6px,#f7fafc 6px,#f7fafc 12px);border:12px solid white;box-shadow:0 0 0 1px var(--line);border-radius:14px;display:grid;place-items:center;text-align:center;padding:16px;color:#a45c32;font-weight:900;letter-spacing:.05em}
+.queue{border:1px solid var(--line);border-radius:12px;margin:15px 0;padding:15px}.queue p{color:var(--muted);font-size:12px;margin:6px 0}.admin-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}
+.instructions{margin:20px 0 0;padding-left:20px;color:#536475;font-size:12px;line-height:1.8}.notice{padding:15px;background:#edf1f5;border-radius:12px;color:#43576a;font-size:12px;margin-top:15px}
+.footer{text-align:center;padding:22px 15px;background:#e9edf1;color:#667583;font-size:11px;line-height:1.7}
+@media(max-width:760px){.columns{grid-template-columns:1fr}.wrap{padding-top:25px}.top{padding:15px 18px}.hero{margin-bottom:15px}}
+@media(max-width:440px){.panel{padding:17px}.grid{grid-template-columns:1fr}.topnav{width:100%}.topnav button{flex:1}.qr-placeholder{width:200px;height:200px}.total strong{font-size:23px}}
+</style>
+</head><body>
+<header class="top"><div class="brand"><div class="monogram">P</div><div><strong>PICKYLA</strong><small>SESSION PROGRAMS · v21</small></div></div>
+<div class="topnav"><button id="publicTab" class="navbtn active">Public Booking Demo</button><button id="adminTab" class="navbtn">Admin Review Demo</button></div></header>
+<div class="warning">TEST PREVIEW ONLY — NO REAL RESERVATION, PAYMENT, OR DATABASE WRITE. DO NOT SEND MONEY.</div>
+<main class="wrap">
+<div class="hero"><div><span class="eyebrow">STRUCTURED COACHING</span><h1>Schedule your progress.</h1><p>Preview Pickyla's 3-session packages: pick your 14-day training window, choose consecutive hours, and review upfront-payment steps.</p></div><div class="chips"><span class="chip">14-day window</span><span class="chip">Real availability · read-only</span><span class="chip">Test checkout</span></div></div>
+<div id="publicPage" class="columns">
+<aside class="panel"><span class="eyebrow">01 · TRAINING PACKAGE</span><h2>Choose a program</h2><p class="note">Program names, durations and prices load from Pickyla Supabase. No changes are made to these records.</p><div id="programs">Loading active programs…</div><div id="programLoadStatus" class="note"></div></aside>
+<div class="panel" id="bookingPanel">
+<div id="scheduler"><div class="flow-head"><div><span class="step">PACKAGE BOOKING</span><h2 id="selectedTitle">Select a program to begin</h2></div><span id="programBadge" class="pill">PREVIEW</span></div>
+<p id="selectedMeta" class="note">Select one of the coaching packages on the left.</p>
+<div id="bookingForm" class="hidden">
+<section class="section" id="headcountArea"><h3>Participants</h3><div id="formatText" class="choice"></div><label class="field hidden" id="groupField">Number of group players<select id="groupCount"></select></label></section>
+<section class="section"><h3>Schedule all sessions</h3><p>Choose the first session date to lock your 14-day window. Subsequent sessions must be on different days and in chronological order. Each session requires the program's exact number of consecutive available hours.</p>
+<div id="windowText" class="range">Choose Session 1 to start the 14-day window.</div><div id="slotsStatus" class="state warn">Select your first session date.</div><div id="sessionFields"></div></section>
+<section class="section"><h3>Participant information</h3><p>First and last names are required for every player. Primary player's contact is used for payment verification.</p><div id="playerFields"></div></section>
+<div class="total"><span>Full package price · upfront</span><strong id="totalPrice">—</strong></div>
+<button class="btn wide gold" id="paymentButton" disabled>Review Test Payment</button><p class="note" id="formHint">Complete all sessions and participant names to continue.</p>
+</div></div>
+<div id="paymentPage" class="hidden"><span class="step">TEST PAYMENT · NO TRANSACTION</span><h2>MariBank payment preview</h2><p class="note">This is a demonstration of the payment instructions. The actual scannable QR is intentionally not displayed here.</p>
+<div class="payment-top"><span>Program</span><b id="paymentProgram"></b><span>Upfront amount</span><strong id="paymentAmount"></strong><span>Receiver</span><b>KYLA NICOLE SORIANO • MariBank (••••2967)</b><span>Test booking reference</span><b id="paymentReference"></b></div>
+<div class="qr-placeholder">DEMO ONLY<br>LIVE QR DISABLED<br>DO NOT PAY</div>
+<div class="notice">On the final checkout: save the bank QR, transfer the exact amount, take a screenshot, and send it to <b>Coach Kyla</b> on Facebook/Messenger together with your booking reference.</div>
+<button class="btn ghost wide" id="backSchedule">Edit sample schedules</button><button class="btn wide gold" id="simulateProof">Simulate “Payment Proof Sent”</button></div>
+<div id="successPage" class="hidden"><span class="step">DEMO RESERVATION</span><h2>Payment verification pending</h2><div class="state">Your demo request was added only to this page's temporary preview queue. No real coach or database received it.</div><p id="successSummary"></p><button id="showDemoAdmin" class="btn gold wide">Test Coach Kyla's Admin Approval</button><button id="newDemo" class="btn ghost wide">Start another demo</button></div>
+</div></div>
+<section id="adminPage" class="panel hidden"><div class="flow-head"><div><span class="eyebrow">PICKYLA ADMIN · SIMULATION</span><h2>Package payment verification</h2></div><span class="pill">DEMO ONLY</span></div><p class="note">This tab demonstrates the admin workflow. No production data, payment records or sessions are created. Reloading the page clears these test requests.</p><div id="demoQueue"><div class="notice">No test package requests yet. Complete a simulated public checkout first.</div></div><button id="returnBooking" class="btn ghost">Back to Public Booking</button></section>
+<ol class="instructions"><li>Choose one of the existing coaching packages.</li><li>Pick all 3 dates within 14 days, selecting only consecutive available hours.</li><li>Add all player names, then review the test payment screen.</li><li>Simulate payment submission and visit the Admin Review Demo.</li></ol>
+</main><footer class="footer">©2026 XBALANCED DIGITAL SOLUTIONS<br>Developed by ELDWIN GASPAR<br><strong>PICKYLA v21 DEVELOPMENT PREVIEW</strong> — Not an active booking or payment gateway</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+'use strict';
+var URL='https://bnekbuwfloagqjzselxp.supabase.co';
+var KEY='sb_publishable_Xs8qdDm4RTa2Adjw34SLKw_rS-c-ikB';
+var db=window.supabase?window.supabase.createClient(URL,KEY):null;
+var $=function(id){return document.getElementById(id);};
+var state={programs:[],program:null,sessions:[],participants:[],headcount:1,availability:new Map(),loading:false,availabilityReady:false,reference:null,queue:[]};
+function esc(str){return String(str==null?'':str).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function cash(x){return '₱'+Number(x||0).toLocaleString('en-PH',{minimumFractionDigits:0,maximumFractionDigits:2});}
+function today(){
+ var parts=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Manila',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
+ var by={};parts.forEach(function(x){by[x.type]=x.value;});return by.year+'-'+by.month+'-'+by.day;
+}
+function plus(date,days){var d=new Date(date+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+days);return d.toISOString().slice(0,10);}
+function nice(date){return new Date(date+'T12:00:00Z').toLocaleDateString('en-PH',{weekday:'short',month:'short',day:'numeric',year:'numeric',timeZone:'UTC'});}
+function time(h){return (h===24?'12:00 MN':(h%12||12)+':00 '+(h<12?'AM':'PM'));}
+function format(){return state.program&&state.program.package_format||'one';}
+function duration(){return state.program?Number(state.program.session_duration_hours||1):1;}
+function total(){return state.program?Number(state.program.fixed_price):0;}
+function optionsFor(date){
+ if(!date||!state.availabilityReady)return [];
+ var result=[],dur=duration();
+ for(var h=8;h+dur<=24;h++){
+  var all=true;for(var k=h;k<h+dur;k++){if((state.availability.get(date+'|'+k)||'available')!=='available'){all=false;break;}}
+  if(all)result.push(h);
+ }
+ return result;
+}
+function headcounts(){var p=state.program;if(!p)return 1;return format()==='one'?1:format()==='duo'?2:state.headcount;}
+function syncPrograms(list){
+ state.programs=list;
+ var host=$('programs');host.innerHTML='';
+ list.forEach(function(p){
+  var btn=document.createElement('button');btn.type='button';btn.className='program'+(state.program&&state.program.id===p.id?' active':'');
+  var type=({one:'1-on-1',duo:'Duo',group:'Group'})[p.package_format]||'Coaching';
+  btn.innerHTML='<b>'+esc(p.name)+'</b><div class="price">'+cash(p.fixed_price)+'</div><small>Full program price · '+esc(type)+'</small><div class="meta"><span>'+p.session_count+' sessions</span><span>'+Number(p.session_duration_hours)+' hours each</span><span>'+(p.package_format==='group'?'4–12 players':type)+'</span></div>';
+  btn.onclick=function(){selectProgram(p.id);};host.appendChild(btn);
+ });
+ if(!list.length)host.textContent='No active coaching programs found.';
+}
+function selectProgram(id){
+ state.program=state.programs.find(function(p){return p.id===id;})||null;if(!state.program)return;
+ state.sessions=Array.from({length:Number(state.program.session_count)},function(){return {date:'',start:null};});
+ state.headcount=Number(state.program.package_min_participants)||1;
+ state.availabilityReady=false;state.availability=new Map();state.participants=[];state.reference=null;
+ syncPrograms(state.programs);
+ $('selectedTitle').textContent=state.program.name;
+ $('programBadge').textContent=String(state.program.package_format).toUpperCase();
+ $('selectedMeta').textContent=state.program.session_count+' sessions · '+Number(state.program.session_duration_hours)+' consecutive hours per session · full package '+cash(state.program.fixed_price);
+ $('bookingForm').classList.remove('hidden');$('paymentPage').classList.add('hidden');$('successPage').classList.add('hidden');$('scheduler').classList.remove('hidden');
+ var f=format(),desc=f==='one'?'1-on-1 coaching: 1 participant':f==='duo'?'Duo coaching: 2 named participants':'Group coaching: choose '+state.program.package_min_participants+'–'+state.program.package_max_participants+' participants';
+ $('formatText').textContent=desc;$('groupField').classList.toggle('hidden',f!=='group');
+ if(f==='group'){
+  var html='';for(var n=state.program.package_min_participants;n<=state.program.package_max_participants;n++)html+='<option value="'+n+'">'+n+' players</option>';
+  $('groupCount').innerHTML=html;$('groupCount').value=String(state.headcount);
+ }
+ $('totalPrice').textContent=cash(total());
+ renderSessions();renderPlayers();checkReady();$('bookingPanel').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function setAvailabilityStatus(text,isError){
+ var el=$('slotsStatus');el.textContent=text;el.className='state'+(isError?' warn':'');
+}
+async function loadAvailability(){
+ var first=state.sessions[0]&&state.sessions[0].date;
+ state.availabilityReady=false;state.availability=new Map();state.loading=true;
+ setAvailabilityStatus('Checking live hourly availability for '+nice(first)+' – '+nice(plus(first,13))+'…',false);renderSessions();
+ try{
+  if(!db)throw Error('The schedule library could not load.');
+  var res=await db.rpc('program_availability_v21',{p_start_date:first,p_end_date:plus(first,13)});
+  if(res.error)throw res.error;
+  (res.data||[]).forEach(function(x){state.availability.set(x.slot_date+'|'+Number(x.start_hour),x.status);});
+  state.availabilityReady=true;setAvailabilityStatus('Live calendar loaded (read-only). Blocked and booked hours cannot be selected.',false);
+ }catch(e){
+  state.availabilityReady=false;setAvailabilityStatus('Availability could not load: '+(e.message||e)+'. Please choose another first date or refresh.',true);
+ }finally{state.loading=false;renderSessions();checkReady();}
+}
+function renderSessions(){
+ if(!state.program)return;
+ var host=$('sessionFields');host.innerHTML='';
+ var first=state.sessions[0].date;
+ $('windowText').textContent=first?'Booking window: '+nice(first)+' through '+nice(plus(first,13))+' (14 calendar dates, inclusive).':'Choose Session 1 to start the 14-day window.';
+ state.sessions.forEach(function(s,i){
+  var earlier=i>0?state.sessions[i-1]:null;
+  var min=i===0?today():(earlier&&earlier.date?plus(earlier.date,1):today());
+  var max=i===0?plus(today(),120):first?plus(first,13):plus(today(),120);
+  var starts=optionsFor(s.date);
+  if(!starts.includes(s.start))s.start=null;
+  var holder=document.createElement('div');holder.className='session';
+  holder.innerHTML='<div class="session-head"><span>SESSION '+(i+1)+' OF '+state.sessions.length+'</span><small class="'+(s.start!==null?'chosen':'')+'">'+(s.start!==null?'Time selected':duration()+' consecutive hrs')+'</small></div>'+
+  '<div class="grid"><label class="field">Choose date<input type="date" data-date="'+i+'" min="'+min+'" max="'+max+'" value="'+esc(s.date)+'" '+(i>0&&(!earlier.date||earlier.start===null)?'disabled':'')+'></label><label class="field">Available hours<select data-time="'+i+'" '+(!s.date||!state.availabilityReady?'disabled':'')+'><option value="">Choose a time range</option>'+
+  starts.map(function(h){return '<option value="'+h+'" '+(s.start===h?'selected':'')+'>'+time(h)+' – '+time(h+duration())+'</option>';}).join('')+
+  '</select></label></div>'+(s.date&&state.availabilityReady&&!starts.length?'<p class="note" style="color:#a65e2b;margin:6px 0 0">No consecutive '+duration()+'-hour slots on this day.</p>':'');
+  host.appendChild(holder);
+ });
+ host.querySelectorAll('[data-date]').forEach(function(el){
+  el.onchange=function(){
+   var i=Number(el.getAttribute('data-date')),value=el.value;
+   if(value&&(value<el.min||value>el.max)){el.value='';value='';}
+   state.sessions[i]={date:value,start:null};
+   for(var j=i+1;j<state.sessions.length;j++)state.sessions[j]={date:'',start:null};
+   if(i===0){state.availabilityReady=false;state.availability.clear();if(value){loadAvailability();return;}setAvailabilityStatus('Select your first session date.',true);}
+   renderSessions();checkReady();
+  };
+ });
+ host.querySelectorAll('[data-time]').forEach(function(el){
+  el.onchange=function(){
+   var idx=Number(el.getAttribute('data-time'));state.sessions[idx].start=el.value===''?null:Number(el.value);
+   renderSessions();checkReady();
+  };
+ });
+}
+function renderPlayers(){
+ var old=state.participants.slice();var n=headcounts();state.participants=Array.from({length:n},function(_,i){return old[i]||{first:'',last:'',contact:''};});
+ var host=$('playerFields');host.innerHTML='';
+ state.participants.forEach(function(p,i){
+  var box=document.createElement('div');box.className='player';
+  box.innerHTML='<b>PLAYER '+(i+1)+(i===0?' · PRIMARY CONTACT':'')+'</b><div class="grid">'+
+  '<label class="field">First name<input type="text" data-first="'+i+'" maxlength="60" placeholder="First name" value="'+esc(p.first)+'"></label>'+
+  '<label class="field">Last name<input type="text" data-last="'+i+'" maxlength="80" placeholder="Last name" value="'+esc(p.last)+'"></label>'+
+  (i===0?'<label class="field" style="grid-column:1/-1">Phone or Messenger contact<input type="text" data-contact="'+i+'" maxlength="120" placeholder="Payment verification contact" value="'+esc(p.contact)+'"></label>':'')+'</div>';
+  host.appendChild(box);
+ });
+ host.querySelectorAll('input').forEach(function(el){el.oninput=function(){
+  var kind=el.hasAttribute('data-first')?'first':el.hasAttribute('data-last')?'last':'contact';
+  var idx=Number(el.getAttribute('data-'+kind));state.participants[idx][kind]=el.value;checkReady();
+ };});
+}
+function checkReady(){
+ var btn=$('paymentButton');if(!state.program){btn.disabled=true;return;}
+ var s=state.sessions,distinct=new Set(s.map(function(x){return x.date;}));
+ var datesValid=s.length>0&&distinct.size===s.length&&s.every(function(x,i){
+  return x.date&&Number.isInteger(x.start)&&optionsFor(x.date).includes(x.start)
+    &&(i===0||x.date>s[i-1].date)&&x.date<=plus(s[0].date,13);
+ });
+ var participantsOk=state.participants.length===headcounts()&&state.participants.every(function(p){return p.first.trim()&&p.last.trim();})&&state.participants[0].contact.trim();
+ var valid=datesValid&&participantsOk&&state.availabilityReady&&!state.loading;
+ btn.disabled=!valid;
+ $('formHint').textContent=valid?'Ready! Review the simulated upfront payment screen. No booking will be sent.':'Complete each session date/time and all required participant details to continue.';
+}
+function tab(which){
+ $('publicPage').classList.toggle('hidden',which!=='public');$('adminPage').classList.toggle('hidden',which!=='admin');
+ $('publicTab').classList.toggle('active',which==='public');$('adminTab').classList.toggle('active',which==='admin');
+ if(which==='admin')renderQueue();window.scrollTo({top:0,behavior:'smooth'});
+}
+$('publicTab').onclick=function(){tab('public');};$('adminTab').onclick=function(){tab('admin');};$('returnBooking').onclick=function(){tab('public');};
+$('groupCount').onchange=function(){state.headcount=Number(this.value);renderPlayers();checkReady();};
+$('paymentButton').onclick=function(){
+ if(this.disabled)return;
+ state.reference='DEMO-'+Math.random().toString(36).substring(2,10).toUpperCase();
+ $('paymentProgram').textContent=state.program.name;
+ $('paymentAmount').textContent=cash(total());$('paymentReference').textContent=state.reference;
+ $('scheduler').classList.add('hidden');$('successPage').classList.add('hidden');$('paymentPage').classList.remove('hidden');
+ $('bookingPanel').scrollIntoView({behavior:'smooth',block:'start'});
+};
+$('backSchedule').onclick=function(){$('paymentPage').classList.add('hidden');$('scheduler').classList.remove('hidden');};
+$('simulateProof').onclick=function(){
+ var p=state.program;
+ state.queue.unshift({ref:state.reference,program:p.name,format:format(),price:total(),players:state.participants.map(function(x){return (x.first+' '+x.last).trim();}),slots:state.sessions.map(function(x){return {date:x.date,start:x.start,end:x.start+duration()};}),status:'Pending Verification'});
+ $('paymentPage').classList.add('hidden');$('successPage').classList.remove('hidden');
+ $('successSummary').textContent='Reference '+state.reference+' · '+p.name+' · '+state.sessions.length+' sessions · '+cash(total());
+};
+$('showDemoAdmin').onclick=function(){tab('admin');};
+$('newDemo').onclick=function(){$('successPage').classList.add('hidden');$('scheduler').classList.remove('hidden');selectProgram(state.program.id);};
+function renderQueue(){
+ var host=$('demoQueue');host.innerHTML='';
+ if(!state.queue.length){host.innerHTML='<div class="notice">No test package requests yet. Complete a simulated public checkout first.</div>';return;}
+ state.queue.forEach(function(req,i){
+  var box=document.createElement('article');box.className='queue';
+  box.innerHTML='<div class="flow-head"><b>'+esc(req.ref)+' · '+esc(req.program)+'</b><span class="pill">'+esc(req.status)+'</span></div>'+
+  '<p>'+req.players.length+' players: '+req.players.map(esc).join(', ')+'</p>'+
+  '<p><b>'+cash(req.price)+'</b> upfront · '+req.slots.map(function(x){return nice(x.date)+' '+time(x.start)+'–'+time(x.end);}).join(' · ')+'</p>'+
+  '<div class="admin-actions"></div>';
+  var actions=box.querySelector('.admin-actions');
+  if(req.status==='Pending Verification'){
+   var approve=document.createElement('button');approve.className='btn gold';approve.textContent='Simulate Approve';approve.onclick=function(){req.status='Confirmed (Demo)';renderQueue();};
+   var reject=document.createElement('button');reject.className='btn ghost';reject.textContent='Simulate Reject';reject.onclick=function(){req.status='Rejected (Demo)';renderQueue();};
+   actions.appendChild(approve);actions.appendChild(reject);
+  }
+  host.appendChild(box);
+ });
+}
+async function init(){
+ $('slotsStatus').textContent='Choose a first date to view read-only live availability.';
+ if(!db){$('programLoadStatus').textContent='Live data unavailable. Reload with an internet connection.';return;}
+ var res=await db.from('coaching_programs').select('id,name,session_count,session_duration_hours,fixed_price,package_format,package_min_participants,package_max_participants').eq('is_active',true).order('created_at');
+ if(res.error){$('programs').textContent='Could not load programs.';$('programLoadStatus').textContent=res.error.message;return;}
+ syncPrograms((res.data||[]).filter(function(p){return p.session_count>=1&&p.session_count<=14&&Number.isInteger(Number(p.session_duration_hours));}));
+ $('programLoadStatus').textContent='Live program data loaded in read-only mode. The preview does not submit bookings.';
+}
+init().catch(function(e){$('programLoadStatus').textContent=e.message||String(e);});
+})();
+</script></body></html>
