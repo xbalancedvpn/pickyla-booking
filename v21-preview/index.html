@@ -80,7 +80,7 @@ function nice(date){return new Date(date+'T12:00:00Z').toLocaleDateString('en-PH
 function time(h){return (h===24?'12:00 MN':(h%12||12)+':00 '+(h<12?'AM':'PM'));}
 function format(){return state.program&&state.program.package_format||'one';}
 function duration(){return state.program?Number(state.program.session_duration_hours||1):1;}
-function total(){return state.program?Number(state.program.fixed_price):0;}
+function total(){var p=state.program;if(!p)return 0;return Number(p.fixed_price)+(format()==='group'?Math.max(0,headcounts()-Number(p.package_min_participants||4))*Number(p.package_additional_player_price||0):0);}
 function optionsFor(date){
  if(!date||!state.availabilityReady)return [];
  var result=[],dur=duration();
@@ -97,7 +97,7 @@ function syncPrograms(list){
  list.forEach(function(p){
   var btn=document.createElement('button');btn.type='button';btn.className='program'+(state.program&&state.program.id===p.id?' active':'');
   var type=({one:'1-on-1',duo:'Duo',group:'Group'})[p.package_format]||'Coaching';
-  btn.innerHTML='<b>'+esc(p.name)+'</b><div class="price">'+cash(p.fixed_price)+'</div><small>Full program price · '+esc(type)+'</small><div class="meta"><span>'+p.session_count+' sessions</span><span>'+Number(p.session_duration_hours)+' hours each</span><span>'+(p.package_format==='group'?'4–12 players':type)+'</span></div>';
+  btn.innerHTML='<b>'+esc(p.name)+'</b><div class="price">'+cash(p.fixed_price)+'</div><small>Full program price · '+esc(type)+(p.package_format==='group'?' · +'+cash(p.package_additional_player_price||0)+' per additional player':'')+'</small><div class="meta"><span>'+p.session_count+' sessions</span><span>'+Number(p.session_duration_hours)+' hours each</span><span>'+(p.package_format==='group'?'4–12 players':type)+'</span></div>';
   btn.onclick=function(){selectProgram(p.id);};host.appendChild(btn);
  });
  if(!list.length)host.textContent='No active coaching programs found.';
@@ -207,7 +207,7 @@ function tab(which){
  if(which==='admin')renderQueue();window.scrollTo({top:0,behavior:'smooth'});
 }
 $('publicTab').onclick=function(){tab('public');};$('adminTab').onclick=function(){tab('admin');};$('returnBooking').onclick=function(){tab('public');};
-$('groupCount').onchange=function(){state.headcount=Number(this.value);renderPlayers();checkReady();};
+$('groupCount').onchange=function(){state.headcount=Number(this.value);renderPlayers();$('totalPrice').textContent=cash(total());checkReady();};
 $('paymentButton').onclick=function(){
  if(this.disabled)return;
  state.reference='DEMO-'+Math.random().toString(36).substring(2,10).toUpperCase();
@@ -246,7 +246,7 @@ function renderQueue(){
 async function init(){
  $('slotsStatus').textContent='Choose a first date to view read-only live availability.';
  if(!db){$('programLoadStatus').textContent='Live data unavailable. Reload with an internet connection.';return;}
- var res=await db.from('coaching_programs').select('id,name,session_count,session_duration_hours,fixed_price,package_format,package_min_participants,package_max_participants').eq('is_active',true).order('created_at');
+ var res=await db.from('coaching_programs').select('id,name,session_count,session_duration_hours,fixed_price,package_additional_player_price,package_format,package_min_participants,package_max_participants').eq('is_active',true).order('created_at');
  if(res.error){$('programs').textContent='Could not load programs.';$('programLoadStatus').textContent=res.error.message;return;}
  syncPrograms((res.data||[]).filter(function(p){return p.session_count>=1&&p.session_count<=14&&Number.isInteger(Number(p.session_duration_hours));}));
  $('programLoadStatus').textContent='Live program data loaded in read-only mode. The preview does not submit bookings.';
