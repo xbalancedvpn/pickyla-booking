@@ -397,7 +397,87 @@
     old.before(s);window.pickylaV20DatePicker&&window.pickylaV20DatePicker.scan&&window.pickylaV20DatePicker.scan();return s;
   }
   function period(mode,load){if(mode!=='custom')tableExpanded=false;const a=id('v20KyleReportFrom'),b=id('v20KyleReportTo'),box=id('v20KyleCustomDates'),lab=id('v20KylePeriodLabel');if(!a||!b)return;let x=a.value,y=b.value,t='Custom Range';if(mode==='today'){x=y=ymd(new Date());t='Today';}else if(mode==='week'){[x,y]=week();t='This Week';}else if(mode==='month'){x=first();y=last();t='This Month';}a.value=x;b.value=y;if(box)box.classList.toggle('is-hidden',mode!=='custom');qa('[data-v20-kyle-period]').forEach(z=>z.classList.toggle('active',z.dataset.v20KylePeriod===mode));if(lab)lab.textContent=t+' • '+pretty(x)+' – '+pretty(y);if(load&&mode!=='custom')report();}
-  async function report(){if(busy||typeof db==='undefined')return;const from=id('v20KyleReportFrom')&&id('v20KyleReportFrom').value,to=id('v20KyleReportTo')&&id('v20KyleReportTo').value,filter=(id('v20KyleReportStatus')&&id('v20KyleReportStatus').value)||'all',host=id('v20KyleReportTable');if(!from||!to)return;if(from>to){alert('Start date must be before end date.');return;}busy=true;if(host)host.innerHTML='<div class="empty">Generating finance report…</div>';try{const r=await db.from('bookings').select('*').gte('session_date',from).lte('session_date',to).order('session_date').order('start_hour');if(r.error)throw r.error;const valid=(r.data||[]).filter(b=>!excluded(b)),ids=valid.map(b=>b.id).filter(Boolean),pm=new Map();if(ids.length){const p=await db.from('booking_payments').select('booking_id,amount').in('booking_id',ids);if(p.error)throw p.error;(p.data||[]).forEach(x=>{const k=String(x.booking_id);pm.set(k,(pm.get(k)||0)+Number(x.amount||0));});}rows=valid.map(b=>{const total=Number(b.total_amount||0),ledger=pm.get(String(b.id)),paid=ledger==null?Number(b.amount_paid||0):ledger;return Object.assign({},b,{total:total,paid:paid,balance:Math.max(0,total-paid)});});const shown=rows.filter(x=>match(x,filter)),confirmed=rows.reduce((s,x)=>s+x.total,0),collected=rows.reduce((s,x)=>s+x.paid,0),earned=rows.filter(x=>x.session_status==='completed').reduce((s,x)=>s+x.total,0),outstanding=rows.reduce((s,x)=>s+x.balance,0),adv=rows.filter(advance).reduce((s,x)=>s+x.paid,0),full=rows.filter(x=>pstate(x)==='paid'),done=full.filter(x=>x.session_status==='completed').length,pre=full.filter(advance).length;id('v20KyleConfirmed').textContent=money(confirmed);id('v20KyleCollected').textContent=money(collected);id('v20KyleEarned').textContent=money(earned);id('v20KyleOutstanding').textContent=money(outstanding);id('v20KyleAdvance').textContent=money(adv);id('v20KylePaidBreakdown').textContent=full.length+' fully paid ('+done+' completed • '+pre+' prepaid)';id('v20KyleRangeLabel').textContent=pretty(from)+' – '+pretty(to)+' • '+shown.length+' of '+rows.length+' sessions';table(shown);charts(rows);}catch(e){if(host)host.innerHTML='<div class="empty">'+esc(e.message||'Could not load finance report.')+'</div>';}busy=false;}
+  function renderPackageFinanceSummary(fin,from,to){
+    let panel=id('v23PackageFinanceSummary');
+    if(!panel){
+      const metrics=id('v20KyleConfirmed')?.closest('.v20-kyle-report-metrics');
+      if(!metrics)return;
+      panel=document.createElement('section');panel.id='v23PackageFinanceSummary';panel.className='v23-package-ledger';
+      metrics.after(panel);
+    }
+    if(!fin){panel.innerHTML='<p class="v23-program-finance-warning">Package Finance temporarily unavailable. Regular session totals are still shown.</p>';return;}
+    const entries=Array.isArray(fin.packages)?fin.packages:[];
+    const visible=entries.filter(x=>Number(x.cash_asof||0)>0);
+    panel.innerHTML='<div class="v23-package-ledger-title"><div><span class="eyebrow">VERIFIED PROMO COLLECTIONS</span><h3>Package Advance Payments</h3>'+
+      '<p>Verified payments are collected upfront. The full package amount stays under Advance / Liability until the last coaching session is consumed; then it becomes Earned Income.</p></div>'+
+      '<strong class="v23-package-ledger-state">'+visible.length+' verified</strong></div>'+
+      '<div class="v23-package-ledger-metrics"><article><span>Cash collected in period</span><strong>'+money(fin.collected_period)+'</strong></article>'+
+      '<article><span>Remaining advance as of '+esc(pretty(to))+'</span><strong>'+money(fin.advance_asof)+'</strong></article>'+
+      '<article><span>Earned packages in period</span><strong>'+money(fin.earned_period)+'</strong></article></div>'+
+      (visible.length?'<div class="v23-package-scroll"><table><thead><tr><th>Package</th><th>Payment</th><th>Sessions used</th><th>Advance left</th></tr></thead><tbody>'+
+        visible.map(x=>'<tr><td><strong>'+esc(x.program_name)+'</strong><small>'+esc(x.reference)+' · '+esc(x.player_name)+'</small></td>'+
+          '<td>'+money(x.cash_asof)+'<small>'+esc(x.paid_date||'')+'</small></td>'+
+          '<td>'+Number(x.used_sessions||0)+' / '+Number(x.total_sessions||0)+'</td><td><strong>'+money(x.advance)+'</strong>'+
+          '<small>'+(x.state==='earned'?'Fully earned':'Awaiting final coaching day')+'</small></td></tr>').join('')+'</tbody></table></div>':
+        '<p class="v23-package-muted">No verified, non-test promo package collections as of this report date.</p>')+
+      (Number(fin.test_package_count)>0?'<p class="v23-package-testnote">'+Number(fin.test_package_count)+' clearly named test package(s) excluded from real accounting; '+money(fin.test_package_value)+' of test verifications occurred in this report period. Test payments remain in the historical database for audit only.</p>':'')+
+      '<p class="v23-package-muted">Court rental is excluded. The totals above are already included in the main Finance metrics; they are not additional charges.</p>';
+  }
+  async function report(){
+    if(busy||typeof db==='undefined')return;
+    const from=id('v20KyleReportFrom')?.value,to=id('v20KyleReportTo')?.value;
+    const filter=id('v20KyleReportStatus')?.value||'all',host=id('v20KyleReportTable');
+    if(!from||!to)return;
+    if(from>to){alert('Start date must be before end date.');return;}
+    busy=true;
+    if(host)host.innerHTML='<div class="empty">Generating finance report…</div>';
+    try{
+      const [regular,packageResult]=await Promise.all([
+        db.from('bookings').select('*').gte('session_date',from).lte('session_date',to).order('session_date').order('start_hour'),
+        db.rpc('admin_program_finance_v23',{p_from:from,p_to:to})
+      ]);
+      if(regular.error)throw regular.error;
+      const fin=packageResult.error?null:packageResult.data;
+      if(packageResult.error)console.warn('[Pickyla Finance] Package report could not load:',packageResult.error.message);
+      const valid=(regular.data||[]).filter(b=>!excluded(b));
+      const ids=valid.map(b=>b.id).filter(Boolean),pm=new Map();
+      if(ids.length){
+        const payments=await db.from('booking_payments').select('booking_id,amount').in('booking_id',ids);
+        if(payments.error)throw payments.error;
+        (payments.data||[]).forEach(x=>{
+          const k=String(x.booking_id);pm.set(k,(pm.get(k)||0)+Number(x.amount||0));
+        });
+      }
+      rows=valid.map(b=>{
+        const total=Number(b.total_amount||0),ledger=pm.get(String(b.id));
+        const paid=ledger==null?Number(b.amount_paid||0):ledger;
+        return {...b,total,paid,balance:Math.max(0,total-paid)};
+      });
+      const shown=rows.filter(x=>match(x,filter));
+      const sum=(list,key)=>list.reduce((n,x)=>n+Number(x[key]||0),0);
+      const confirmed=sum(rows,'total')+Number(fin?.registered_value_period||0);
+      const collected=sum(rows,'paid')+Number(fin?.collected_period||0);
+      const earned=sum(rows.filter(x=>x.session_status==='completed'),'total')+Number(fin?.earned_period||0);
+      const outstanding=sum(rows,'balance');
+      const adv=sum(rows.filter(advance),'paid')+Number(fin?.advance_asof||0);
+      const full=rows.filter(x=>pstate(x)==='paid');
+      const done=full.filter(x=>x.session_status==='completed').length;
+      const pre=full.filter(advance).length;
+      id('v20KyleConfirmed').textContent=money(confirmed);
+      id('v20KyleCollected').textContent=money(collected);
+      id('v20KyleEarned').textContent=money(earned);
+      id('v20KyleOutstanding').textContent=money(outstanding);
+      id('v20KyleAdvance').textContent=money(adv);
+      id('v20KylePaidBreakdown').textContent=full.length+' regular sessions fully paid ('+done+' completed · '+pre+
+        ' prepaid) + '+Number(fin?.verified_package_count||0)+' verified non-test promo(s)';
+      id('v20KyleRangeLabel').textContent=pretty(from)+' – '+pretty(to)+' · '+shown.length+' of '+rows.length+' regular sessions';
+      renderPackageFinanceSummary(fin,from,to);
+      table(shown);
+      charts(rows,fin?.daily_earnings||[]);
+    }catch(e){
+      if(host)host.innerHTML='<div class="empty">'+esc(e.message||'Could not load finance report.')+'</div>';
+    }finally{busy=false;}
+  }
   function table(list){
     const h=id('v20KyleReportTable');if(!h)return;
     if(!list.length){h.innerHTML='<div class="empty">No sessions match this collection view.</div>';return;}
@@ -412,7 +492,7 @@
       if(wasExpanded)requestAnimationFrame(()=>h.scrollIntoView({behavior:'smooth',block:'start'}));
     };
   }
-  function charts(list){if(typeof Chart==='undefined')return;const em=new Map();list.filter(r=>r.session_status==='completed').forEach(r=>em.set(r.session_date,(em.get(r.session_date)||0)+r.total));const labels=Array.from(em.keys()).sort(),vals=labels.map(x=>em.get(x)),ec=id('v20KyleEarnedChart');if(ec){if(earnedChart)earnedChart.destroy();earnedChart=new Chart(ec,{type:'bar',data:{labels:labels.length?labels:['No completed sessions'],datasets:[{data:labels.length?vals:[0],backgroundColor:'#ffd600',borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#999',font:{size:9}}},y:{beginAtZero:true,ticks:{color:'#999',callback:v=>money(v)},grid:{color:'#242424'}}}}});}const sm=new Map();list.forEach(r=>{const k=size(r.participant_count);sm.set(k,(sm.get(k)||0)+1);});const sl=Array.from(sm.keys()),sv=sl.map(x=>sm.get(x)),sc=id('v20KyleSizeChart');if(sc){if(sizeChart)sizeChart.destroy();sizeChart=new Chart(sc,{type:'doughnut',data:{labels:sl.length?sl:['No bookings'],datasets:[{data:sl.length?sv:[1],backgroundColor:['#ffd600','#fff','#777','#4f4f4f','#b9a400'],borderColor:'#0b0b0b',borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#aaa',boxWidth:10,font:{size:9}}}}}});}}
+  function charts(list,packageDaily=[]){if(typeof Chart==='undefined')return;const em=new Map();list.filter(r=>r.session_status==='completed').forEach(r=>em.set(r.session_date,(em.get(r.session_date)||0)+r.total));(packageDaily||[]).forEach(r=>{const day=String(r.day||'');if(day)em.set(day,(em.get(day)||0)+Number(r.amount||0));});const labels=Array.from(em.keys()).sort(),vals=labels.map(x=>em.get(x)),ec=id('v20KyleEarnedChart');if(ec){if(earnedChart)earnedChart.destroy();earnedChart=new Chart(ec,{type:'bar',data:{labels:labels.length?labels:['No completed sessions'],datasets:[{data:labels.length?vals:[0],backgroundColor:'#ffd600',borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#999',font:{size:9}}},y:{beginAtZero:true,ticks:{color:'#999',callback:v=>money(v)},grid:{color:'#242424'}}}}});}const sm=new Map();list.forEach(r=>{const k=size(r.participant_count);sm.set(k,(sm.get(k)||0)+1);});const sl=Array.from(sm.keys()),sv=sl.map(x=>sm.get(x)),sc=id('v20KyleSizeChart');if(sc){if(sizeChart)sizeChart.destroy();sizeChart=new Chart(sc,{type:'doughnut',data:{labels:sl.length?sl:['No bookings'],datasets:[{data:sl.length?sv:[1],backgroundColor:['#ffd600','#fff','#777','#4f4f4f','#b9a400'],borderColor:'#0b0b0b',borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#aaa',boxWidth:10,font:{size:9}}}}}});}}
   function csv(){const f=(id('v20KyleReportStatus')&&id('v20KyleReportStatus').value)||'all',list=rows.filter(r=>match(r,f));if(!list.length)return alert('No report rows to export.');const c=v=>{const s=String(v==null?'':v);return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;},out=[['Date','Player','Time','Pax','Session Status','Fee','Paid','Balance','Payment Status'].join(',')];list.forEach(r=>out.push([r.session_date,r.client_name,hour(r.start_hour)+'-'+hour(r.end_hour),r.participant_count,r.session_status,r.total,r.paid,r.balance,pstate(r)].map(c).join(',')));const blob=new Blob(['\ufeff'+out.join('\n')],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='pickyla-income-'+id('v20KyleReportFrom').value+'-to-'+id('v20KyleReportTo').value+'.csv';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000);}
   function wire(){qa('[data-v20-kyle-period]').forEach(b=>b.addEventListener('click',()=>period(b.dataset.v20KylePeriod,true)));id('v20KyleApplyRange').addEventListener('click',()=>{tableExpanded=false;const a=id('v20KyleReportFrom').value,b=id('v20KyleReportTo').value;if(a&&b)id('v20KylePeriodLabel').textContent='Custom Range • '+pretty(a)+' – '+pretty(b);report();});id('v20KyleReportStatus').addEventListener('change',()=>{tableExpanded=false;const list=rows.filter(r=>match(r,id('v20KyleReportStatus').value));table(list);id('v20KyleRangeLabel').textContent=pretty(id('v20KyleReportFrom').value)+' – '+pretty(id('v20KyleReportTo').value)+' • '+list.length+' of '+rows.length+' sessions';});id('v20KyleExportCsv').addEventListener('click',csv);period('month',false);}
   function hook(){if(window.__pickylaKyleFinanceHooked)return;window.__pickylaKyleFinanceHooked=true;if(typeof window.loadReports==='function'){const prev=window.loadReports;window.loadReports=async function(){const v=await prev.apply(this,arguments);clearTimeout(timer);timer=setTimeout(report,80);return v;};}window.addEventListener('coach:data-changed',()=>{clearTimeout(timer);timer=setTimeout(report,100);});}
