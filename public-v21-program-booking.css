@@ -49,3 +49,10 @@
 @media(max-width:520px){.pkg-v21-overlay{padding:0;align-items:stretch}.pkg-v21-sheet{max-height:100dvh;border-radius:0;padding:20px 16px}.pkg-v21-types{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.pkg-v21-types button{padding:10px 5px}.pkg-v21-session-fields,.pkg-v21-player-fields{grid-template-columns:1fr}.pkg-v21-player-fields label:last-child:nth-child(3){grid-column:auto}}
 
 #pkgV21Reschedule{margin-top:18px;border-top:1px solid #dfe4ea;padding-top:13px;display:grid;gap:10px}#pkgV21Reschedule.hidden{display:none!important}
+
+/* v21 promo scheduling review (safe while checkout remains disabled) */
+.pkg-v21-preview-warning{border:1px solid #f0d397;background:#fff8e8;color:#744a18;border-radius:12px;padding:13px;font-size:12px;line-height:1.65;margin:13px 0}
+.pkg-v21-preview-details{white-space:pre-wrap;overflow-wrap:anywhere;border:1px solid #e2e7ed;background:#f7f9fc;color:#283f55;padding:15px;border-radius:12px;font-size:12px;line-height:1.75;margin:13px 0}
+.pkg-v21-sheet textarea{resize:vertical}
+.pkg-v21-sheet .pkg-v21-format-info{grid-column:1/-1;display:grid;gap:3px;border:1px solid #e3e9ee;background:#f8fafc;border-radius:12px;padding:12px}
+.pkg-v21-format-info small{font-size:11px;color:#5b6a78}
