@@ -1,0 +1,62 @@
+/* Pickyla 5+1 Coaching Promos | v21 homepage visual upgrade.
+ * Uses the existing program grid and keeps the original booking hooks. */
+html{scroll-behavior:smooth}
+.pickyla-promo-hero-link{display:flex;align-items:center;gap:13px;max-width:410px;margin:18px 0 0;padding:11px 14px;border:1px solid rgba(245,196,0,.6);border-radius:13px;background:rgba(14,14,14,.82);color:#fff;text-decoration:none;box-shadow:0 7px 25px rgba(0,0,0,.16);transition:background .2s,transform .2s}
+.pickyla-promo-hero-link:hover{background:#171717;transform:translateY(-2px)}
+.pickyla-promo-hero-link:focus-visible,.pickyla-promo-explore:focus-visible,.pickyla-promo-regular-link:focus-visible{outline:2px solid #f5c400;outline-offset:4px}
+.pickyla-promo-hero-star{display:grid;place-items:center;width:39px;height:39px;flex:0 0 auto;border-radius:10px;background:#f5c400;color:#111;font-size:22px}
+.pickyla-promo-hero-link strong,.pickyla-promo-hero-link small{display:block}
+.pickyla-promo-hero-link strong{font:800 11px/1.5 Manrope,sans-serif;letter-spacing:.045em;color:#ffe35b}
+.pickyla-promo-hero-link small{font-size:10px;line-height:1.6;color:#e1e1e1}
+.pickyla-promo-hero-arrow{margin-left:auto;font-weight:800;font-size:22px;color:#f5c400}
+#programs.pickyla-promo-section{position:relative;overflow:hidden;padding-top:0;background:#101010;color:#fff;isolation:isolate}
+#programs .pickyla-promo-spotlight{position:relative;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(285px,.8fr);gap:25px;align-items:center;max-width:1250px;margin:0 auto 30px;padding:clamp(32px,5vw,64px) clamp(22px,5vw,56px);border:1px solid #5e501d;border-radius:0 0 28px 28px;background:radial-gradient(ellipse at 80% 15%,rgba(245,196,0,.18),transparent 46%),linear-gradient(125deg,#1a1a1a,#0e0e0e 65%,#30260b)}
+.pickyla-promo-spotlight:before{content:"";pointer-events:none;position:absolute;right:-75px;bottom:-130px;width:280px;height:280px;border-radius:50%;border:2px solid rgba(255,204,0,.17);box-shadow:0 0 0 30px rgba(255,204,0,.035),0 0 0 65px rgba(255,204,0,.025)}
+.pickyla-promo-exclusive{display:inline-flex;align-items:center;gap:9px;padding:9px 13px;border:1px solid #8b772b;border-radius:999px;color:#ffe45c;background:rgba(245,196,0,.07);letter-spacing:.115em;font:800 10px/1.4 Manrope,sans-serif}
+.pickyla-promo-exclusive-dot{width:4px;height:4px;background:#f5c400;border-radius:50%}
+.pickyla-promo-intro{position:relative;z-index:1}
+.pickyla-promo-intro h2{font:800 clamp(38px,6.3vw,80px)/.96 Manrope,sans-serif;letter-spacing:-.055em;margin:23px 0 18px;color:#fff}
+.pickyla-promo-intro h2 em{color:#f5c400;font-style:normal}
+.pickyla-promo-subtitle{max-width:565px;color:#e5e2d9;line-height:1.85;font-size:clamp(12px,1.3vw,15px);margin:0 0 23px}
+.pickyla-promo-subtitle strong{color:#ffe15c}
+.pickyla-promo-explore{display:inline-flex;align-items:center;gap:20px;background:#f5c400;color:#141414;text-decoration:none;padding:15px 23px;border-radius:10px;font:800 11px/1.3 Manrope,sans-serif;letter-spacing:.045em;box-shadow:0 7px 20px rgba(245,196,0,.13)}
+.pickyla-promo-explore:hover{background:#ffe05d}
+.pickyla-promo-explore span{font-size:18px}
+.pickyla-promo-highlights{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;position:relative;z-index:1}
+.pickyla-promo-highlight{min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:23px 8px;border:1px solid #55491f;border-radius:14px;background:rgba(255,255,255,.055);text-align:center}
+.pickyla-promo-highlight strong{font:800 clamp(28px,3.7vw,43px)/1 Manrope,sans-serif;color:#fff;letter-spacing:-.08em;white-space:nowrap}
+.pickyla-promo-highlight strong span{font:800 9px/1 Manrope,sans-serif;color:#f5c400;letter-spacing:0;margin-left:3px}
+.pickyla-promo-highlight small{font:700 9px/1.5 Manrope,sans-serif;color:#c9c0a5;letter-spacing:.04em}
+.pickyla-promo-highlight-note{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:9px;color:#f5c400;font:800 12px/1.5 Manrope,sans-serif;padding:10px}
+.pickyla-promo-list-heading{max-width:1200px;display:flex;justify-content:space-between;align-items:end;gap:18px;margin:28px auto 24px;flex-wrap:wrap}
+.pickyla-promo-eyebrow{display:block;margin-bottom:7px;color:#f5c400;font:800 10px/1.3 Manrope,sans-serif;letter-spacing:.15em}
+.pickyla-promo-list-heading h3{font:800 clamp(24px,3.2vw,35px)/1.2 Manrope,sans-serif;letter-spacing:-.04em;margin:0;color:white}
+.pickyla-promo-list-heading p{font-size:12px;color:#c7c1b5;margin:7px 0 0;line-height:1.7}
+.pickyla-promo-regular-link{color:#f7d968;text-decoration:underline;text-decoration-color:#796d3a;text-underline-offset:5px;font-size:11px;font-weight:700}
+#programs .pickyla-promo-card-grid{max-width:1200px;gap:16px}
+#programs .pickyla-promo-card{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;padding:23px 21px 19px;border:1.5px solid #79651c;border-radius:20px;background:linear-gradient(160deg,#242424,#131313 77%);box-shadow:0 12px 25px rgba(0,0,0,.15);text-align:center}
+#programs .pickyla-promo-card:before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,transparent,#f5c400,transparent)}
+#programs .pickyla-promo-card.featured{border-color:#ffd33d}
+.pickyla-promo-card-topline{color:#bbae7f;letter-spacing:.14em;font:800 9px/1.5 Manrope,sans-serif}
+.pickyla-promo-card-symbol{margin-top:12px;font-size:36px;letter-spacing:-8px;color:#f5c400;line-height:1.1;min-height:40px;filter:drop-shadow(0 0 5px rgba(245,196,0,.2));padding-right:8px}
+#programs .pickyla-promo-card h3{font:800 clamp(23px,3vw,30px)/1.15 Manrope,sans-serif;margin:12px 0 10px;letter-spacing:-.045em;color:#fff;text-wrap:balance}
+.pickyla-promo-format{color:#111;background:#f5c400;padding:6px 16px;min-width:70%;border-radius:999px;font:800 10px/1.2 Manrope,sans-serif}
+.pickyla-promo-offer{margin:16px 0 0;color:#ffe15c;font:800 12px/1.4 Manrope,sans-serif;letter-spacing:.02em}
+#programs .pickyla-promo-card .program-public-price{font:800 clamp(37px,4vw,48px)/1.05 Manrope,sans-serif;letter-spacing:-.065em;white-space:nowrap;margin:9px 0 0;color:#fff}
+#programs .pickyla-promo-card .pickyla-promo-price-label{font:800 9px/1.4 Manrope,sans-serif;letter-spacing:.1em;color:#cfbd76;margin:8px 0 11px}
+.pickyla-promo-benefits{display:grid;gap:10px;text-align:left;width:100%;padding:12px 0 14px;margin-top:2px;border-top:1px solid #3c3c3c}
+.pickyla-promo-benefits>div{display:flex;gap:10px;align-items:start;font:600 11px/1.6 DM Sans,sans-serif;color:#e7e7e7}
+.pickyla-promo-benefits>div span{display:grid;place-items:center;width:19px;height:19px;border-radius:50%;background:#f5c400;color:#111;font-size:11px;flex:0 0 auto;margin-top:0}
+.pickyla-promo-savings{background:#f5c400;color:#111;border-radius:10px;padding:10px 15px;margin:6px 0 11px;font:800 clamp(14px,2vw,18px)/1.1 Manrope,sans-serif;width:100%;transform:rotate(-1deg)}
+.pickyla-promo-extra{font-size:11px;color:#fbd34b;font-weight:800;margin:0 0 8px}
+.pickyla-promo-details{width:100%;border-top:1px solid #373737;border-bottom:1px solid #373737;margin:5px 0 14px;padding:9px 0;text-align:left;color:#eee}
+.pickyla-promo-details summary{font-size:11px;font-weight:700;cursor:pointer;text-align:center;list-style-position:inside}
+.pickyla-promo-details .program-goals-public{margin-top:10px;text-align:left}
+#programs .pickyla-promo-card .program-public-actions{width:100%;margin-top:auto}
+#programs .pickyla-promo-card .program-interest{background:#f5c400;color:#111;padding:14px 12px;font:800 12px/1.3 Manrope,sans-serif;border-radius:10px;transition:background .2s,transform .2s}
+#programs .pickyla-promo-card .program-interest:hover{background:#ffe66d;transform:translateY(-1px)}
+.pickyla-promo-terms{max-width:1200px;margin:24px auto 0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;padding:17px 20px;border:1px solid #3d3d3d;border-radius:14px;background:#1e1e1e}
+.pickyla-promo-terms span{font:700 11px/1.55 DM Sans,sans-serif;color:#e3dcc0;text-align:center}
+@media(max-width:1000px){#programs .pickyla-promo-spotlight{grid-template-columns:1fr} .pickyla-promo-highlights{max-width:680px;width:100%}.pickyla-promo-terms{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:680px){#programs.pickyla-promo-section{padding-left:15px;padding-right:15px}#programs .pickyla-promo-spotlight{margin-left:-15px;margin-right:-15px;padding:30px 22px 24px;border-radius:0 0 22px 22px} .pickyla-promo-intro h2{font-size:clamp(40px,9vw,58px)}.pickyla-promo-list-heading{align-items:start;flex-direction:column}.pickyla-promo-highlights{gap:5px}.pickyla-promo-highlight{padding:15px 5px;gap:6px}.pickyla-promo-highlight strong{font-size:29px}.pickyla-promo-highlight small{font-size:8px}.pickyla-promo-terms{grid-template-columns:1fr 1fr;gap:8px;padding:14px}.pickyla-promo-terms span{font-size:10px}#programs .pickyla-promo-card{padding:23px 19px}.pickyla-promo-hero-link{max-width:100%}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.pickyla-promo-hero-link,.pickyla-promo-explore,.pickyla-promo-card .program-interest{transition:none}}
