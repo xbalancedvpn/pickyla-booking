@@ -24,3 +24,49 @@
 .pkg-v22-card-buttons{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}
 .pkg-v22-card-buttons button{font-size:12px;border-radius:9px;padding:11px 12px;flex:1 1 140px}
 @media(max-width:480px){.pkg-v22-card-shell{padding:15px}.pkg-v22-card-image-wrap{max-height:52dvh}.pkg-v22-card-buttons{flex-direction:column}.pkg-v22-card-buttons button{width:100%}}
+
+/* v23: compact controls and LIGHT Pickyla confirmation preview */
+#pkgV22ConfirmationDialog{background:#fffcf4!important;border:1px solid #e9d8a9!important;color:#191e25!important}
+#pkgV22ConfirmationDialog .pkg-v22-card-shell{padding:16px!important}
+#pkgV22ConfirmationDialog .pkg-v22-card-head{border-bottom:2px solid #edbd28;padding-bottom:13px}
+#pkgV22ConfirmationDialog .pkg-v22-card-head h2{color:#191e25!important}
+#pkgV22ConfirmationDialog .pkg-v22-card-eyebrow{color:#987006}
+#pkgV22ConfirmationDialog .pkg-v22-card-image-wrap{background:#f5f1e7;border:1px solid #e7d7aa}
+#pkgV22ConfirmationDialog .pkg-v22-card-buttons{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;align-items:center!important;gap:9px!important;margin-top:13px!important}
+#pkgV22ConfirmationDialog .pkg-v22-card-buttons button{display:inline-flex!important;justify-content:center!important;align-items:center!important;flex:none!important;width:100%!important;min-height:44px!important;height:44px!important;max-height:48px!important;padding:8px 12px!important;margin:0!important;font-size:12px!important;line-height:1.15!important;font-weight:850!important;border-radius:9px!important;white-space:normal!important}
+#pkgV22ConfirmationDialog #pkgV22CardDownload{grid-column:1/-1;background:#f2c627!important;color:#151515!important;border-color:#e1b222!important}
+#pkgV22ConfirmationDialog #pkgV22CardCopy,#pkgV22ConfirmationDialog #pkgV22CardDismiss{background:#fff!important;color:#252525!important;border:1px solid #e5d5a6!important}
+#pkgV22ConfirmationDialog #pkgV22CardClose{min-height:36px!important;height:36px!important;max-height:36px!important;min-width:36px!important;width:36px!important}
+.pkg-v22-booking-opened{outline:3px solid #f2c627;outline-offset:4px;transition:outline-color .4s}
+.pkg-v22-bell-item{background:#fffefa;padding:10px;border-radius:10px;margin-top:8px;border:1px solid #e7dfbf}
+.pkg-v22-bell-section{background:#fffdf5;border-color:#f0df9d}
+.pkg-v22-bell-section h3 span{background:#fff0ac;color:#383020}
+.pkg-v22-bell-item button{background:#fff3bb!important;color:#262321!important;border:1px solid #e8cf72!important;border-radius:10px!important;min-height:37px!important;padding:8px 11px!important;font-weight:850!important;font-size:12px!important}
+/* Verified package balances in the existing finance view. */
+.v23-package-ledger{margin:18px 0 22px;padding:18px;background:#fffdf5;border:1px solid #e6d9ae;border-radius:17px}
+.v23-package-ledger-title{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:start;margin-bottom:12px}
+.v23-package-ledger-title h3{color:#232525;margin:7px 0 7px;font-size:20px}
+.v23-package-ledger-title p{color:#625f56;font-size:12px;line-height:1.65;margin:0;max-width:690px}
+.v23-package-ledger-state{border-radius:999px;background:#fff2bf;padding:7px 11px;color:#6e5416;font-size:11px;white-space:nowrap}
+.v23-package-ledger-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0}
+.v23-package-ledger-metrics article{display:grid;gap:9px;background:#fff6d1;border:1px solid #e8d898;padding:13px;border-radius:13px}
+.v23-package-ledger-metrics span{font-size:11px;font-weight:800;color:#705d2a}
+.v23-package-ledger-metrics strong{font-size:clamp(16px,2.5vw,23px);color:#1c1c1c}
+.v23-package-scroll{overflow:auto;border:1px solid #e5dfce;border-radius:12px;background:#fff}
+.v23-package-scroll table{width:100%;min-width:480px;border-collapse:collapse}
+.v23-package-scroll th,.v23-package-scroll td{padding:12px;text-align:left;border-bottom:1px solid #ece7dc;font-size:12px;color:#243040;vertical-align:top}
+.v23-package-scroll th{background:#faf7e9;font-size:11px;color:#655b39}
+.v23-package-scroll td strong{font-size:12px}.v23-package-scroll td small{display:block;font-size:10px;color:#6b717e;margin-top:5px}
+.v23-package-muted,.v23-package-testnote{color:#6b6658;font-size:11px;line-height:1.6;margin:11px 0 0}
+.v23-package-testnote{padding:10px;border-left:3px solid #dab350;background:#fff5d7;border-radius:6px}
+.v23-program-finance-warning{color:#8b4a19;font-size:12px}
+@media(max-width:650px){.v23-package-ledger{padding:13px}.v23-package-ledger-metrics{grid-template-columns:1fr}.v23-package-ledger-metrics article{grid-template-columns:1.25fr 1fr;align-items:center}.v23-package-ledger-metrics strong{text-align:right}}
+
+/* Match the existing Admin date picker to Pickyla's light/ivory theme. */
+.v20-date-dialog{background:#fffcf4!important;border:1px solid #ecdcae!important}
+.v20-date-card{background:#fffcf4!important}
+.v20-date-head h2,.v20-date-nav strong{color:#202326!important}
+.v20-date-grid button{background:#fff!important;color:#202326!important}
+.v20-date-grid button.selected{background:#f2c627!important;border-color:#e5b621!important;color:#171717!important}
+.v20-date-grid button.today:not(.selected){border:2px solid #e3b928!important;background:#fff7d7!important}
+.v20-date-nav button,.v20-date-actions button{background:#fff5cc!important;color:#242424!important;border-color:#e6cf7c!important}
