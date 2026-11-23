@@ -19,7 +19,7 @@
   root.id='pickylaProgramV21';
   root.className='pkg-v21-overlay hidden';
   root.innerHTML='<section class="pkg-v21-sheet" role="dialog" aria-modal="true" aria-labelledby="pkgV21Title">'+
-    '<div class="pkg-v21-header"><div><span class="pkg-v21-eyebrow">PICKYLA SESSION PROGRAM</span><h2 id="pkgV21Title">Program Booking</h2></div><button type="button" id="pkgV21Close" aria-label="Close">×</button></div>'+
+    '<div class="pkg-v21-header"><div><span class="pkg-v21-eyebrow">PICKYLA COACHING PROMOS</span><h2 id="pkgV21Title">5+1 Promo Booking</h2></div><button type="button" id="pkgV21Close" aria-label="Close">×</button></div>'+
     '<div id="pkgV21Notice" class="pkg-v21-notice hidden" role="status"></div>'+
     '<div id="pkgV21Form">'+
       '<div class="pkg-v21-meta" id="pkgV21Meta"></div>'+
@@ -54,7 +54,8 @@
       '<button type="button" id="pkgV21Proof" class="pkg-v21-main">Upload Proof & Book All Sessions</button>'+
       '<p class="pkg-v21-small">When the upload succeeds, your selected slots are booked immediately. Payment verification remains pending, and an invalid payment may result in cancellation. Do not transfer a second time without contacting Coach Kyla.</p>'+
     '</div>'+
-    '<div id="pkgV21Done" class="hidden"><h3 id="pkgV21DoneTitle">Payment verification pending</h3><p id="pkgV21DoneText"></p><div id="pkgV21StatusSessions"></div><button type="button" id="pkgV21Link" class="pkg-v21-secondary">Copy My Program link</button><div id="pkgV21Reschedule" class="hidden"><h3>Request a reschedule</h3><p class="pkg-v21-small">Please request at least 24 hours before your coaching time. Minimum notice is 12 hours; requests require Kyla\'s approval. Only dates within your original 14-day package window can be selected.</p><label>Which session?<select id="pkgV21ResSession"></select></label><label>New date<input id="pkgV21ResDate" type="date"></label><label>New start time<select id="pkgV21ResHour"></select></label><label>Reason<textarea id="pkgV21ResReason" rows="2" maxlength="500" placeholder="Brief reason (optional)"></textarea></label><button type="button" id="pkgV21ResSend" class="pkg-v21-secondary">Send Reschedule Request</button></div></div>'+
+    '<div id="pkgV21Done" class="hidden"><h3 id="pkgV21DoneTitle">Payment verification pending</h3><p id="pkgV21DoneText"></p><div id="pkgV21StatusSessions"></div><button type="button" id="pkgV21Link" class="pkg-v21-secondary">Copy My Program link</button><div id="pkgV21Reschedule" class="hidden"><h3>Request a reschedule</h3><p class="pkg-v21-small">Please request at least 24 hours before your coaching time. Minimum notice is 12 hours; requests require Kyla\'s approval. Only dates within your original 14-day package window can be selected.</p><label>Which session?<select id="pkgV21ResSession"></select></label><label>New date<input id="pkgV21ResDate" type="text" readonly placeholder="Select date" aria-haspopup="dialog"></label><label>New start time<select id="pkgV21ResHour"></select></label><label>Reason<textarea id="pkgV21ResReason" rows="2" maxlength="500" placeholder="Brief reason (optional)"></textarea></label><button type="button" id="pkgV21ResSend" class="pkg-v21-secondary">Send Reschedule Request</button></div></div>'+
+    '<footer class="pkg-v21-brand-footer"><strong>PICKYLA COACHING</strong><span>©2026 XBALANCED DIGITAL SOLUTIONS</span><small>Developed by ELDWIN GASPAR</small></footer>'+
   '</section>';
   document.body.appendChild(root);
   P('pkgV21Close').onclick=()=>{root.classList.add('hidden');document.body.classList.remove('pkg-v21-scrolllock');};
@@ -132,7 +133,7 @@
       const options='<option value="">Choose consecutive start hours</option>'+starts.map(h=>'<option value="'+h+'" '+(h===s.start?'selected':'')+'>'+hour(h)+' – '+hour(h+Number(state.program.session_duration_hours))+'</option>').join('');
       const t=titles.find(x=>Number(x.session_number)===i+1);
       return '<div class="pkg-v21-session"><strong>Session '+(i+1)+(t?' • '+esc(t.title):'')+'</strong><div class="pkg-v21-session-fields">'+
-        '<label>Day<input data-session-date="'+i+'" type="date" min="'+dateMin+'" max="'+dateMax+'" value="'+esc(s.date)+'" '+(i>0&&!first?'disabled':'')+'></label>'+
+        '<label>Day<input data-session-date="'+i+'" type="text" readonly placeholder="Select date" aria-haspopup="dialog" min="'+dateMin+'" max="'+dateMax+'" value="'+esc(s.date)+'" '+(i>0&&!first?'disabled':'')+'></label>'+
         '<label>Time<select data-session-start="'+i+'" '+(!s.date?'disabled':'')+'>'+options+'</select></label></div>'+
         '<div class="pkg-v21-court-fields"><label>Court venue<select data-session-court="'+i+'">'+COURTS.map(c=>'<option value="'+esc(c)+'" '+((s.court||'NO COURT YET')===c?'selected':'')+'>'+esc(c)+'</option>').join('')+'</select></label>'+
         '<label class="'+(s.court==='OTHERS'?'':'hidden')+'" data-session-other-wrap="'+i+'">Specify other court<input type="text" data-session-other="'+i+'" maxlength="95" placeholder="Court name" value="'+esc(s.otherCourt||'')+'"></label></div>'+
