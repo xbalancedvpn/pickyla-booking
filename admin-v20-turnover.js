@@ -420,7 +420,8 @@
           '<td>'+Number(x.used_sessions||0)+' / '+Number(x.total_sessions||0)+'</td><td><strong>'+money(x.advance)+'</strong>'+
           '<small>'+(x.state==='earned'?'Fully earned':'Awaiting final coaching day')+'</small></td></tr>').join('')+'</tbody></table></div>':
         '<p class="v23-package-muted">No verified promo package collections as of this report date.</p>')+
-      '<p class="v23-package-muted">Verified bank receipts are included regardless of player naming. For demo transactions, confirm that payment was actually received before verifying them.</p>'+
+      (Number(fin.cancelled_package_count||0)>0?'<p class="v23-package-testnote"><strong>'+Number(fin.cancelled_package_count)+' cancelled package(s)</strong> excluded from active Advance and earnings. Historical payment ledger: '+money(fin.cancelled_payment_ledger_asof)+'. Check refund/void status separately; these receipts were not deleted.</p>':'')+
+      '<p class="v23-package-muted">Advance represents active prepaid coaching only. Cancelled-package ledger entries are retained for audit and refund reconciliation. For demo payments, confirm actual bank receipt before marking verified.</p>'+
       '<p class="v23-package-muted">Court rental is excluded. The totals above are already included in the main Finance metrics; they are not additional charges.</p>';
   }
   async function report(){
