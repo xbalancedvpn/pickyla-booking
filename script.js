@@ -63,6 +63,23 @@ async function copyDetails(){const text=bookingMessage(),players=getPublicPartic
 function showToast(){const t=document.getElementById("copyToast");t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1800);}copyButton.onclick=copyDetails;copyOpenButton.onclick=async()=>{if(!bookingMessage())return;await copyDetails();setTimeout(()=>window.open(FACEBOOK_URL,"_blank"),180);};
 document.getElementById("prevMonth").onclick=()=>{view.setMonth(view.getMonth()-1);selectedDate=null;selectedStart=null;selectedEnd=null;loadMonthSchedule();};document.getElementById("nextMonth").onclick=()=>{view.setMonth(view.getMonth()+1);selectedDate=null;selectedStart=null;selectedEnd=null;loadMonthSchedule();};loadMonthSchedule();
 if(sendRequestButton)sendRequestButton.onclick=async()=>{const players=getPublicParticipants(true),text=bookingMessage();if(!text||!players){updateSummary();return;}const original=sendRequestButton.textContent;sendRequestButton.disabled=true;sendRequestButton.textContent="Sending…";if(requestSubmitStatus){requestSubmitStatus.dataset.keep="1";requestSubmitStatus.className="request-submit-status hidden";}try{saveParticipantMemory(players);const primary=players[0],{data,error}=await db.rpc("submit_public_inquiry_v17d",{p_preferred_date:keyDate(selectedDate),p_start_hour:selectedStart,p_end_hour:selectedEnd,p_participant_count:players.length,p_coaching_type:selectedPackage,p_quoted_rate:Number(String(selectedRate||"").replace(/[^0-9.]/g,""))||null,p_source_text:text,p_goal_focus:selectedGoalLabel||null,p_program_interest:selectedProgramInterest?.name||null,p_participants:players});if(error)throw error;requestSubmitStatus.className="request-submit-status ok";requestSubmitStatus.textContent="Request sent to Pickyla Admin. Your slot is still subject to final confirmation by Kyla.";}catch(e){requestSubmitStatus.className="request-submit-status error";requestSubmitStatus.textContent=e.message||"Could not send your request. Please try Messenger instead.";}finally{sendRequestButton.disabled=false;sendRequestButton.textContent=original;setTimeout(()=>{if(requestSubmitStatus)delete requestSubmitStatus.dataset.keep;},1200);}};
+window.pickylaV27ResetRegularBooking=function(){
+  selectedDate=null;selectedStart=null;selectedEnd=null;
+  selectedPackage=null;selectedRate=null;selectedPlayers=1;
+  selectedGoalFocus=null;selectedGoalLabel=null;selectedProgramInterest=null;
+  document.querySelectorAll('.package-options button').forEach(b=>b.classList.remove('active'));
+  if(groupSizeWrap)groupSizeWrap.classList.add('hidden');
+  renderPublicParticipants(1);
+  publicParticipantList?.querySelectorAll('input').forEach(i=>i.value='');
+  if(document.getElementById('v20PublicCourt')){
+    document.getElementById('v20PublicCourt').value='';
+    if(document.getElementById('v20PublicCourtOther'))document.getElementById('v20PublicCourtOther').value='';
+    window.pickylaV20PublicCourt?.syncOther?.();
+  }
+  document.querySelectorAll('[data-self-score]').forEach(el=>el.value='');
+  const note=document.getElementById('v17fSelfAssessmentNote');if(note)note.value='';
+  renderCalendar();renderSlots();populateStartTimes();updateSummary();
+};
 renderPublicParticipants(1);
 const weekPreviewModal=document.getElementById("weekPreviewModal"),publicWeekGrid=document.getElementById("publicWeekGrid"),publicWeekRange=document.getElementById("publicWeekRange");
 function publicSunday(d=new Date()){const x=new Date(d);x.setHours(0,0,0,0);x.setDate(x.getDate()-x.getDay());return x;}
