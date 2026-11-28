@@ -320,6 +320,12 @@
     window.pickylaV20Multi={
       isMultiple:()=>state.mode==='multiple',
       sessions:()=>[...state.sessions.values()],
+      sessionsForRequest:()=>[...state.sessions.values()].sort((a,b)=>a.date.localeCompare(b.date))
+        .map(s=>({date:s.date,start_hour:s.start,end_hour:s.end,court:sessionCourt20(s)})),
+      reset:()=>{
+        state.sessions.clear();state.active=null;state.courtMode='same';
+        switchMode('single');renderSessionList();syncSummary();
+      },
       ready:multiReady,
       totalHours,
       totalFee
