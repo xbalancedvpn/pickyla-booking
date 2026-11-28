@@ -2,6 +2,26 @@
 (function(){
   const byId=id=>document.getElementById(id);
   const COURTS=['NO COURT YET','NANOMOLY','DINK VALLEY','HC SANTIAGO','CASA PLAY','COURTYARD','OTHERS'];
+  async function refreshSavedCourts(){
+    // Registered venues come only from confirmed bookings, not anonymous text input.
+    const dbClient=typeof db!=='undefined'?db:null;
+    if(!dbClient)return;
+    const {data,error}=await dbClient.rpc('pickyla_public_courts_v26');
+    if(error||!Array.isArray(data))return;
+    const select=byId('v20PublicCourt');
+    if(!select)return;
+    const original=select.value;
+    const newNames=data.map(n=>String(n||'').trim().toUpperCase())
+      .filter(n=>n&&n!=='OTHERS'&&!COURTS.includes(n));
+    select.querySelectorAll('option[data-auto-court]').forEach(o=>o.remove());
+    const others=select.querySelector('option[value="OTHERS"]');
+    for(const name of [...new Set(newNames)]){
+      const opt=new Option(name,name);opt.dataset.autoCourt='1';
+      if(others)select.insertBefore(opt,others);else select.add(opt);
+    }
+    if([...select.options].some(o=>o.value===original))select.value=original;
+    syncOther();
+  }
 
   function clean(v){return String(v||'').trim().replace(/\s+/g,' ');}
   function courtValue(){
@@ -75,6 +95,8 @@
       };
     }
     syncOther();
+    refreshSavedCourts().catch(()=>{});
+    document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshSavedCourts().catch(()=>{});});
     if(typeof updateSummary==='function')updateSummary();
     window.pickylaV20PublicCourt={value:courtValue,options:[...COURTS],syncOther};
   }
