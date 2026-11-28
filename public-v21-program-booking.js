@@ -62,8 +62,17 @@
   root.addEventListener('click',e=>{if(e.target===root)P('pkgV21Close').click();});
   function notice(text,isError){const el=P('pkgV21Notice');el.textContent=text||'';el.classList.toggle('hidden',!text);el.classList.toggle('error',!!isError);}
   function show(stage){for(const key of ['Form','Preview','Payment','Done'])P('pkgV21'+key).classList.toggle('hidden',key!==stage);root.classList.remove('hidden');document.body.classList.add('pkg-v21-scrolllock');P('pkgV21Close').focus();}
-  const COURTS=['NO COURT YET','NANOMOLY','DINK VALLEY','HC SANTIAGO','CASA PLAY','COURTYARD','OTHERS'];
+  let COURTS=['NO COURT YET','NANOMOLY','DINK VALLEY','HC SANTIAGO','CASA PLAY','COURTYARD','OTHERS'];
   const courtFor=s=>s?.court==='OTHERS'?'OTHERS: '+String(s?.otherCourt||'').trim().replace(/\s+/g,' ').slice(0,95):(s?.court||'NO COURT YET');
+  const readableCourt=value=>String(value||'NO COURT YET').replace(/^OTHERS:\s*/i,'');
+  async function refreshSavedCourts(){
+    const {data,error}=await db.rpc('pickyla_public_courts_v26');
+    if(error||!Array.isArray(data))return;
+    const fixed=['NO COURT YET','NANOMOLY','DINK VALLEY','HC SANTIAGO','CASA PLAY','COURTYARD'];
+    const extras=[...new Set(data.map(x=>String(x||'').trim().toUpperCase()).filter(x=>x&&!fixed.includes(x)&&x!=='OTHERS'))]
+      .map(x=>'OTHERS: '+x);
+    COURTS=[...fixed,...extras,'OTHERS'];
+  }
   function checkoutEnabled(){return !!(state.program?.package_booking_enabled&&state.settings&&state.settings.enabled&&state.settings.qr_image_url&&state.settings.account_name&&state.settings.bank_name&&state.settings.messenger_url);}
   function priceFor(){const p=state.program;if(!p)return 0;const extra=p.package_format==='group'?Math.max(0,headcount()-Number(p.package_min_participants||4))*Number(p.package_additional_player_price||0):0;return Number(p.fixed_price||0)+extra;}
   function headcount(){return state.type==='one'?1:state.type==='duo'?2:state.count;}
@@ -135,7 +144,7 @@
       return '<div class="pkg-v21-session"><strong>Session '+(i+1)+(t?' • '+esc(t.title):'')+'</strong><div class="pkg-v21-session-fields">'+
         '<label>Day<input data-session-date="'+i+'" type="text" readonly placeholder="Select date" aria-haspopup="dialog" min="'+dateMin+'" max="'+dateMax+'" value="'+esc(s.date)+'" '+(i>0&&!first?'disabled':'')+'></label>'+
         '<label>Time<select data-session-start="'+i+'" '+(!s.date?'disabled':'')+'>'+options+'</select></label></div>'+
-        '<div class="pkg-v21-court-fields"><label>Court venue<select data-session-court="'+i+'">'+COURTS.map(c=>'<option value="'+esc(c)+'" '+((s.court||'NO COURT YET')===c?'selected':'')+'>'+esc(c)+'</option>').join('')+'</select></label>'+
+        '<div class="pkg-v21-court-fields"><label>Court venue<select data-session-court="'+i+'">'+COURTS.map(c=>'<option value="'+esc(c)+'" '+((s.court||'NO COURT YET')===c?'selected':'')+'>'+esc(readableCourt(c))+'</option>').join('')+'</select></label>'+
         '<label class="'+(s.court==='OTHERS'?'':'hidden')+'" data-session-other-wrap="'+i+'">Specify other court<input type="text" data-session-other="'+i+'" maxlength="95" placeholder="Court name" value="'+esc(s.otherCourt||'')+'"></label></div>'+
         (s.date&&!starts.length?'<small class="pkg-v21-warning">No consecutive '+esc(state.program.session_duration_hours)+'-hour slot on this day.</small>':'')+
         '</div>';
@@ -190,6 +199,7 @@
     state.program=null;state.settings=null;state.reference=null;state.token=null;state.availability.clear();
     P('pkgV21Meta').textContent='Loading package setup…';
     try{
+      await refreshSavedCourts().catch(()=>{});
       const [prog,sett,sessions]=await Promise.all([
         db.from('coaching_programs').select('id,name,session_count,session_duration_hours,fixed_price,package_additional_player_price,package_format,package_min_participants,package_max_participants,package_booking_enabled,is_active').eq('id',summary.id).single(),
         db.rpc('program_payment_settings_v21'),
@@ -242,7 +252,7 @@
       'Participants ('+headcount()+'): '+participants.map(p=>p.first_name+' '+p.last_name).join(', '),
       'Contact: '+(participants[0]?.contact||''),
       'Requested coaching dates:',
-      ...state.sessions.map((x,i)=>(i+1)+'. '+nice(x.date)+' | '+hour(x.start)+' to '+hour(x.start+duration)+' | Court: '+courtFor(x)),
+      ...state.sessions.map((x,i)=>(i+1)+'. '+nice(x.date)+' | '+hour(x.start)+' to '+hour(x.start+duration)+' | Court: '+readableCourt(courtFor(x))),
       'Total: '+money(state.price)+' for '+state.sessions.length*duration+' coaching hours (court fee excluded).',
       'Please confirm availability and official booking/payment instructions.'
     ].join('\n');
