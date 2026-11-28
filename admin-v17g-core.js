@@ -42,17 +42,63 @@
   ['pendingCount','adminNotificationCount','collectionDueCount','cancelCount'].forEach(id=>{const el=$g(id);if(el)new MutationObserver(syncActionStrip).observe(el,{childList:true,characterData:true,subtree:true});});
 
   // Today filters reduce scanning when the day gets busy.
-  const todayList=$g('todaySessionList');let todayFilter='all';
+  const todayList=$g('todaySessionList');let todayFilter='all',todayEmpty=null;
   if(todayList){
     const tools=document.createElement('div');tools.className='v17g-today-tools';tools.innerHTML=`<div class="v17g-filter-chips">
-      <button type="button" class="active" data-filter="all">All</button><button type="button" data-filter="action">Needs Action</button><button type="button" data-filter="upcoming">Upcoming</button><button type="button" data-filter="completed">Completed</button><button type="button" data-filter="outstanding">Outstanding</button>
+      <button type="button" class="active" data-filter="all">Active</button><button type="button" data-filter="action">Needs Action</button><button type="button" data-filter="upcoming">Upcoming</button><button type="button" data-filter="completed">Completed</button><button type="button" data-filter="outstanding">Outstanding</button>
     </div><span id="v17gTodayCount" class="v17g-today-count"></span>`;
     todayList.insertAdjacentElement('beforebegin',tools);
+    todayEmpty=document.createElement('div');
+    todayEmpty.className='empty v17g-today-filter-empty';
+    todayEmpty.hidden=true;
+    todayEmpty.setAttribute('role','status');
+    todayList.insertAdjacentElement('afterend',todayEmpty);
     tools.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{todayFilter=b.dataset.filter;tools.querySelectorAll('[data-filter]').forEach(x=>x.classList.toggle('active',x===b));applyTodayFilter();});
     new MutationObserver(()=>setTimeout(applyTodayFilter,0)).observe(todayList,{childList:true,subtree:true});
   }
-  function classifyToday(el){const t=el.textContent.toLowerCase();return{action:t.includes('needs closing')||t.includes('balance ₱')||t.includes('balance p'),upcoming:t.includes('scheduled')&&!t.includes('needs closing'),completed:t.includes('completed'),outstanding:(t.includes('balance ₱')||t.includes('balance p'))&&!t.includes('balance ₱0')&&!t.includes('balance p0')};}
-  function applyTodayFilter(){if(!todayList)return;const items=[...todayList.querySelectorAll('.today-session-item')];let shown=0;items.forEach(el=>{const c=classifyToday(el),ok=todayFilter==='all'||Boolean(c[todayFilter]);el.classList.toggle('v17g-filtered',!ok);if(ok)shown++;});const label=$g('v17gTodayCount');if(label)label.textContent=`${shown} shown`;}
+  function classifyToday(el){
+    // Read the booking status pill, NOT the whole card text: scheduled cards
+    // have a "Mark Completed" action which must never be mistaken for status.
+    const pill=el.querySelector('.status-pill-v17');
+    const status=pill?.classList||{contains:()=>false};
+    const text=(el.querySelector('p')?.textContent||'').toLowerCase();
+    const needsClosing=(pill?.textContent||'').toLowerCase().includes('needs closing');
+    const balanceDue=/balance\s*(?:₱|php|p)\s*[1-9]/i.test(text);
+    const isCompleted=status.contains('status-completed');
+    const noShow=status.contains('status-no_show');
+    const isScheduled=status.contains('status-scheduled');
+    return{
+      closed:isCompleted||noShow,
+      action:needsClosing||balanceDue,
+      upcoming:isScheduled&&!needsClosing,
+      completed:isCompleted,
+      outstanding:balanceDue
+    };
+  }
+  function applyTodayFilter(){
+    if(!todayList)return;
+    const items=[...todayList.querySelectorAll('.today-session-item')];
+    let shown=0;
+    items.forEach(el=>{
+      const c=classifyToday(el);
+      // Active is the default operational queue. Finished bookings move out,
+      // but remain available in Completed, client history, and Finance.
+      const show=todayFilter==='all'?!c.closed:Boolean(c[todayFilter]);
+      el.classList.toggle('v17g-filtered',!show);
+      if(show)shown++;
+    });
+    const label=$g('v17gTodayCount');
+    if(label)label.textContent=`${shown} shown`;
+    if(todayEmpty){
+      todayEmpty.hidden=items.length===0||shown>0;
+      todayEmpty.textContent=todayFilter==='all'
+        ?'No active sessions left to close. View the Completed tab for finished coaching.'
+        :todayFilter==='completed'?'No completed sessions in this view.'
+        :todayFilter==='action'?'No sessions need action.'
+        :todayFilter==='outstanding'?'No outstanding sessions in this view.'
+        :'No upcoming sessions in this view.';
+    }
+  }
 
   // Client cleanup: permanently delete empty profiles, archive profiles that already have history.
   async function clientUsage(clientId){
