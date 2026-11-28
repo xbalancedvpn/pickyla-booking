@@ -16,3 +16,7 @@
 .v20-back-to-top{position:fixed;right:18px;bottom:22px;z-index:89;border:0;border-radius:999px;padding:10px 13px;background:#111;color:#f5c400;box-shadow:0 12px 30px rgba(0,0,0,.25);font:800 .72rem Manrope;display:flex;align-items:center;gap:5px;opacity:0;pointer-events:none;transform:translateY(12px);transition:opacity .18s ease,transform .18s ease;cursor:pointer}
 .v20-back-to-top.show{opacity:1;pointer-events:auto;transform:translateY(0)}
 @media(max-width:720px){.v20-back-to-top{right:16px;bottom:91px}.v20-back-to-top span{display:none}}
+
+/* Only show the operational empty state when no Active/filtered sessions remain. */
+.v17g-today-filter-empty[hidden]{display:none!important}
+.v17g-today-filter-empty{margin:8px 0 16px;padding:18px 14px;background:#fff9e3;border:1px solid #e9d995;border-radius:12px;color:#49422b;font-weight:650;text-align:center;font-size:13px}
